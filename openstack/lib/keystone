@@ -1,0 +1,34 @@
+# lib/keystone
+#
+# ``deploy.sh`` calls in this order:
+#
+# - install_keystone
+# - configure_keystone
+# - init_keystone
+# - start_keystone
+# - stop_keystone
+# - cleanup_keystone
+
+install_keystone() {
+    # install keystone related packages
+}
+
+configure_keystone() {
+    # modify keystone config file
+}
+
+init_keystone() {
+    # handle database related config
+}
+
+start_keystone() {
+    # start keystone services
+}
+
+stop_keystone() {
+    # stop keystone services
+}
+
+cleanup_keystone() {
+    # clean up keystone packages
+}

@@ -1,0 +1,34 @@
+# lib/rabbitmq
+#
+# ``deploy.sh`` calls in this order:
+#
+# - install_rabbitmq
+# - configure_rabbitmq
+# - init_rabbitmq
+# - start_rabbitmq
+# - stop_rabbitmq
+# - cleanup_rabbitmq
+
+install_rabbitmq() {
+    # install rabbitmq related packages
+}
+
+configure_rabbitmq() {
+    # modify rabbitmq config file
+}
+
+init_rabbitmq() {
+    # handle database related config
+}
+
+start_rabbitmq() {
+    # start rabbitmq services
+}
+
+stop_rabbitmq() {
+    # stop rabbitmq services
+}
+
+cleanup_rabbitmq() {
+    # clean up rabbitmq packages
+}

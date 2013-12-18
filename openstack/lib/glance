@@ -1,0 +1,34 @@
+# lib/glance
+#
+# ``deploy.sh`` calls in this order:
+#
+# - install_glance
+# - configure_glance
+# - init_glance
+# - start_glance
+# - stop_glance
+# - cleanup_glance
+
+install_glance() {
+    # install glance related packages
+}
+
+configure_glance() {
+    # modify glance config file
+}
+
+init_glance() {
+    # handle database related config
+}
+
+start_glance() {
+    # start glance services
+}
+
+stop_glance() {
+    # stop glance services
+}
+
+cleanup_glance() {
+    # clean up glance packages
+}

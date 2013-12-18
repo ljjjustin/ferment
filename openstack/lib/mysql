@@ -1,0 +1,34 @@
+# lib/mysql
+#
+# ``deploy.sh`` calls in this order:
+#
+# - install_mysql
+# - configure_mysql
+# - init_mysql
+# - start_mysql
+# - stop_mysql
+# - cleanup_mysql
+
+install_mysql() {
+    # install mysql related packages
+}
+
+configure_mysql() {
+    # modify mysql config file
+}
+
+init_mysql() {
+    # handle database related config
+}
+
+start_mysql() {
+    # start mysql services
+}
+
+stop_mysql() {
+    # stop mysql services
+}
+
+cleanup_mysql() {
+    # clean up mysql packages
+}

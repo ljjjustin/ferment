@@ -1,0 +1,34 @@
+# lib/nova
+#
+# ``deploy.sh`` calls in this order:
+#
+# - install_nova
+# - configure_nova
+# - init_nova
+# - start_nova
+# - stop_nova
+# - cleanup_nova
+
+install_nova() {
+    # install nova related packages
+}
+
+configure_nova() {
+    # modify nova config file
+}
+
+init_nova() {
+    # handle database related config
+}
+
+start_nova() {
+    # start nova services
+}
+
+stop_nova() {
+    # stop nova services
+}
+
+cleanup_nova() {
+    # clean up nova packages
+}

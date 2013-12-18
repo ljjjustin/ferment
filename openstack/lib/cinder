@@ -1,0 +1,34 @@
+# lib/cinder
+#
+# ``deploy.sh`` calls in this order:
+#
+# - install_cinder
+# - configure_cinder
+# - init_cinder
+# - start_cinder
+# - stop_cinder
+# - cleanup_cinder
+
+install_cinder() {
+    # install cinder related packages
+}
+
+configure_cinder() {
+    # modify cinder config file
+}
+
+init_cinder() {
+    # handle database related config
+}
+
+start_cinder() {
+    # start cinder services
+}
+
+stop_cinder() {
+    # stop cinder services
+}
+
+cleanup_cinder() {
+    # clean up cinder packages
+}
