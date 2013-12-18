@@ -11,24 +11,30 @@
 
 install_nova() {
     # install nova related packages
+    echo "Installing nova ..."
 }
 
 configure_nova() {
     # modify nova config file
+    echo "Configuring nova ..."
 }
 
 init_nova() {
     # handle database related config
+    echo "Initializing nova ..."
 }
 
 start_nova() {
     # start nova services
+    echo "Starting nova ..."
 }
 
 stop_nova() {
     # stop nova services
+    echo "Stopping nova ..."
 }
 
 cleanup_nova() {
     # clean up nova packages
+    echo "Cleaning up nova ..."
 }
