@@ -1,0 +1,14 @@
+mysql-server
+rabbitmq-server
+openstack-utils
+openstack-common
+# keystone
+openstack-keystone
+# glance
+openstack-glance
+# nova
+openstack-nova
+openstack-nova-conductor
+openstack-nova-console
+# horizon
+openstack-dashboard
