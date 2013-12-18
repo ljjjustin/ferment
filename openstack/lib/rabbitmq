@@ -11,24 +11,34 @@
 
 install_rabbitmq() {
     # install rabbitmq related packages
+    echo "Installing rabbitmq ..."
+    yum install -y rabbitmq-server
 }
 
 configure_rabbitmq() {
     # modify rabbitmq config file
+    echo "Configuring rabbitmq ..."
 }
 
 init_rabbitmq() {
     # handle database related config
+    echo "Initializing rabbitmq ..."
 }
 
 start_rabbitmq() {
     # start rabbitmq services
+    echo "Starting rabbitmq ..."
+    /etc/init.d/rabbitmq-server start
 }
 
 stop_rabbitmq() {
     # stop rabbitmq services
+    echo "Stopping rabbitmq ..."
+    /etc/init.d/rabbitmq-server stop
 }
 
 cleanup_rabbitmq() {
     # clean up rabbitmq packages
+    echo "Cleaning up rabbitmq ..."
+    yum remove -y rabbitmq-server
 }
