@@ -11,24 +11,34 @@
 
 install_mysql() {
     # install mysql related packages
+    echo "Installing mysql ..."
+    yum install -y mysql-server
 }
 
 configure_mysql() {
     # modify mysql config file
+    echo "Configuring mysql ..."
 }
 
 init_mysql() {
     # handle database related config
+    echo "Initializing mysql ..."
 }
 
 start_mysql() {
     # start mysql services
+    echo "Starting mysql ..."
+    /etc/init.d/mysqld start
 }
 
 stop_mysql() {
     # stop mysql services
+    echo "Stopping mysql ..."
+    /etc/init.d/mysqld stop
 }
 
 cleanup_mysql() {
     # clean up mysql packages
+    echo "Cleaning up mysql ..."
+    yum remove -y mysql-server
 }
