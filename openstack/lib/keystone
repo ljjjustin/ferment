@@ -9,26 +9,53 @@
 # - stop_keystone
 # - cleanup_keystone
 
+KEYSTONE_SERVICE_TOKEN=${KEYSTONE_SERVICE_TOKEN:-ADMIN}
+KEYSTONE_DB_NAME=${KEYSTONE_DB_NAME:-keystone}
+KEYSTONE_DB_USERNAME=${KEYSTONE_DB_USERNAME:-keystone}
+KEYSTONE_DB_PASSWORD=${KEYSTONE_DB_PASSWORD:-keystone}
+
 install_keystone() {
     # install keystone related packages
+    install_package openstack-keystone
 }
 
 configure_keystone() {
+    keystone_conf='/etc/keystone/keystone.conf'
     # modify keystone config file
+    if [ -f ${keystone_conf} ]; then
+        ## keystone admin token
+        openstack-config --set ${keystone_conf} DEFAULT admin_token ${KEYSTONE_SERVICE_TOKEN}
+        ## sql connection
+        openstack-config --set ${keystone_conf} sql connection mysql://${KEYSTONE_DB_USERNAME}:${KEYSTONE_DB_PASSWORD}@${MYSQL_HOST}/${KEYSTONE_DB_NAME}
+        ## token format
+        openstack-config --set ${keystone_conf} signing token_format UUID
+    fi
+}
+
+init_database() {
+    local MYSQL="mysql -h${MYSQL_HOST}"
+    ${MYSQL} -e "CREATE DATABASE IF NOT EXISTS ${KEYSTONE_DB_NAME}"
+    ${MYSQL} -e "GRANT ALL ON ${KEYSTONE_DB_NAME}.* TO '${KEYSTONE_DB_USERNAME}'@'${MYSQL_HOST}' IDENTIFIED BY '${KEYSTONE_DB_PASSWORD}'"
+    ${MYSQL} -e "FLUSH PRIVILEGES"
 }
 
 init_keystone() {
     # handle database related config
+    init_database
+    keystone-manage db_sync
 }
 
 start_keystone() {
     # start keystone services
+    /etc/init.d/openstack-keystone start
 }
 
 stop_keystone() {
     # stop keystone services
+    /etc/init.d/openstack-keystone stop
 }
 
 cleanup_keystone() {
     # clean up keystone packages
+    remove_package openstack-keystone
 }
