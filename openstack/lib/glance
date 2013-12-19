@@ -9,26 +9,74 @@
 # - stop_glance
 # - cleanup_glance
 
+GLANCE_DB_NAME=${GLANCE_DB_NAME:-glance}
+GLANCE_DB_USERNAME=${GLANCE_DB_USERNAME:-glance}
+GLANCE_DB_PASSWORD=${GLANCE_DB_PASSWORD:-glance}
+GLANCE_OS_TENANT_NAME=${GLANCE_OS_TENANT_NAME:-openstack}
+GLANCE_OS_USERNAME=${GLANCE_OS_USERNAME:-glance}
+GLANCE_OS_PASSWORD=${GLANCE_OS_PASSWORD:-admin}
+
 install_glance() {
     # install glance related packages
+    install_package openstack-glance
 }
 
 configure_glance() {
     # modify glance config file
+    glance_reg_conf='/etc/glance/glance-registry.conf'
+    if [ -f ${glance_reg_conf} ]; then
+        openstack-config --set ${glance_reg_conf} DEFAULT sql_connection mysql://${GLANCE_DB_USERNAME}:${GLANCE_DB_PASSWORD}@${MYSQL_HOST}/${GLANCE_DB_NAME}
+        openstack-config --set ${glance_reg_conf} paste_deploy flavor keystone
+        openstack-config --set ${glance_reg_conf} keystone_authtoken auth_protocol http
+        openstack-config --set ${glance_reg_conf} keystone_authtoken auth_host ${KEYSTONE_HOST}
+        openstack-config --set ${glance_reg_conf} keystone_authtoken auth_port 35357
+        openstack-config --set ${glance_reg_conf} keystone_authtoken admin_tenant_name ${GLANCE_OS_TENANT_NAME}
+        openstack-config --set ${glance_reg_conf} keystone_authtoken admin_user ${GLANCE_OS_USERNAME}
+        openstack-config --set ${glance_reg_conf} keystone_authtoken admin_password ${GLANCE_OS_PASSWORD}
+        openstack-config --set ${glance_reg_conf} keystone_authtoken singing_dir /var/lib/glance/keystone-singing-glance
+    fi
+    glance_api_conf='/etc/glance/glance-api.conf'
+    if [ -f ${glance_api_conf} ]; then
+        openstack-config --set ${glance_api_conf} DEFAULT sql_connection mysql://${GLANCE_DB_USERNAME}:${GLANCE_DB_PASSWORD}@${MYSQL_HOST}/${GLANCE_DB_NAME}
+        openstack-config --set ${glance_api_conf} DEFAULT workers 4
+        openstack-config --set ${glance_api_conf} DEFAULT notifier_strategy noop
+        openstack-config --set ${glance_api_conf} paste_deploy flavor keystone
+        openstack-config --set ${glance_api_conf} keystone_authtoken auth_protocol http
+        openstack-config --set ${glance_api_conf} keystone_authtoken auth_host ${KEYSTONE_HOST}
+        openstack-config --set ${glance_api_conf} keystone_authtoken auth_port 35357
+        openstack-config --set ${glance_api_conf} keystone_authtoken admin_tenant_name ${GLANCE_OS_TENANT_NAME}
+        openstack-config --set ${glance_api_conf} keystone_authtoken admin_user ${GLANCE_OS_USERNAME}
+        openstack-config --set ${glance_api_conf} keystone_authtoken admin_password ${GLANCE_OS_PASSWORD}
+        openstack-config --set ${glance_api_conf} keystone_authtoken singing_dir /var/lib/glance/keystone-singing-glance
+    fi
+}
+
+init_database() {
+    local MYSQL="mysql -h${MYSQL_HOST}"
+    ${MYSQL} -e "CREATE DATABASE IF NOT EXISTS ${GLANCE_DB_NAME}"
+    ${MYSQL} -e "GRANT ALL ON ${GLANCE_DB_NAME}.* TO '${GLANCE_DB_USERNAME}'@'${MYSQL_HOST}' IDENTIFIED BY '${GLANCE_DB_PASSWORD}'"
+    ${MYSQL} -e "FLUSH PRIVILEGES"
 }
 
 init_glance() {
     # handle database related config
+    init_database
+    glance-manage db_sync
 }
 
 start_glance() {
     # start glance services
+    /etc/init.d/openstack-glance-registry start
+    /etc/init.d/openstack-glance-api start
 }
 
 stop_glance() {
     # stop glance services
+    /etc/init.d/openstack-glance-api stop
+    /etc/init.d/openstack-glance-registry stop
 }
 
 cleanup_glance() {
     # clean up glance packages
+    remove_package openstack-glance
 }

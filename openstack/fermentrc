@@ -1,1 +1,2 @@
 MYSQL_HOST=localhost
+KEYSTONE_HOST=localhost
