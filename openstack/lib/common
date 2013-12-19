@@ -1,1 +1,45 @@
 # common - common functions
+#
+#
+reposdir=${reposdir:-/tmp/havana}
+reposerver=${reposerver:-'http://127.0.0.1'}
+
+yum_conf=${reposdir}/yum.conf
+repo_conf=${reposdir}/havana.repo
+
+init_repository() {
+    mkdir -p ${reposdir}
+    cat > ${yum_conf} << EOF
+[main]
+keepcache=0
+debuglevel=2
+exactarch=1
+obsoletes=1
+plugins=0
+gpgcheck=0
+installonly_limit=5
+reposdir=${reposdir}
+cachedir=${reposdir}
+logfile=${reposdir}/yum.log
+EOF
+
+    cat > ${repo_conf} << EOF
+[base]
+name=OpenStack packages
+baseurl=${reposerver}/centos/\$releasever/\$basearch
+enabled=1
+gpgcheck=0
+EOF
+}
+
+install_package() {
+    local YUM="yum -c ${yum_conf}"
+    ${YUM} install -y "$@"
+}
+
+remove_package() {
+    local YUM="yum -c ${yum_conf}"
+    ${YUM} remove -y "$@"
+}
+
+init_repository

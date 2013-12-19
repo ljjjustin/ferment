@@ -13,7 +13,6 @@ ALL_SERVICES=('mysql' 'rabbitmq' 'keystone' 'glance' 'cinder' 'nova')
 
 is_valid_command() {
     local command=$1
-    ALL_COMMANDS=('install' 'config' 'cleanup' 'reinstall')
     for val in ${ALL_COMMANDS[@]}; do
         if [ "${command}" = "${val}" ]; then
             return 0
@@ -44,8 +43,8 @@ is_valid_service ${service} || usage
 
 ## source functions
 topdir=$(cd $(dirname $0) && pwd)
-script_name="lib/${service}"
-source ${topdir}/${script_name}
+source ${topdir}/lib/common
+source ${topdir}/lib/${service}
 
 ## execute functions
 if [ "${command}" == "install" ]; then

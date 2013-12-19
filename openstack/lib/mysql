@@ -12,7 +12,7 @@
 install_mysql() {
     # install mysql related packages
     echo "Installing mysql ..."
-    yum install -y mysql-server
+    install_package mysql-server
 }
 
 configure_mysql() {
@@ -40,5 +40,5 @@ stop_mysql() {
 cleanup_mysql() {
     # clean up mysql packages
     echo "Cleaning up mysql ..."
-    yum remove -y mysql-server
+    remove_package mysql-server
 }

@@ -12,7 +12,7 @@
 install_rabbitmq() {
     # install rabbitmq related packages
     echo "Installing rabbitmq ..."
-    yum install -y rabbitmq-server
+    install_package rabbitmq-server
 }
 
 configure_rabbitmq() {
@@ -40,5 +40,5 @@ stop_rabbitmq() {
 cleanup_rabbitmq() {
     # clean up rabbitmq packages
     echo "Cleaning up rabbitmq ..."
-    yum remove -y rabbitmq-server
+    remove_package rabbitmq-server
 }
