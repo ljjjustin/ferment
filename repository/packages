@@ -6,6 +6,8 @@ openstack-common
 openstack-keystone
 # glance
 openstack-glance
+# cinder
+openstack-cinder
 # nova
 openstack-nova
 openstack-nova-conductor
