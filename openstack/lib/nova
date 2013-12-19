@@ -9,19 +9,50 @@
 # - stop_nova
 # - cleanup_nova
 
+NOVA_DB_NAME=${NOVA_DB_NAME:-nova}
+NOVA_DB_USERNAME=${NOVA_DB_USERNAME:-nova}
+NOVA_DB_PASSWORD=${NOVA_DB_PASSWORD:-nova}
+NOVA_OS_TENANT_NAME=${NOVA_OS_TENANT_NAME:-openstack}
+NOVA_OS_USERNAME=${NOVA_OS_USERNAME:-nova}
+NOVA_OS_PASSWORD=${NOVA_OS_PASSWORD:-admin}
+
 install_nova() {
     # install nova related packages
     echo "Installing nova ..."
+    install_package openstack-nova openstack-nova-console
 }
 
 configure_nova() {
     # modify nova config file
     echo "Configuring nova ..."
+    nova_conf='/etc/nova/nova.conf'
+    if [ -f ${nova_reg_conf} ]; then
+        openstack-config --set ${nova_conf} DEFAULT sql_connection mysql://${NOVA_DB_USERNAME}:${NOVA_DB_PASSWORD}@${MYSQL_HOST}/${NOVA_DB_NAME}
+    fi
+    nova_api_conf='/etc/nova/api-paste.ini'
+    if [ -f ${nova_api_conf} ]; then
+        openstack-config --set ${nova_api_conf} filter:authtoken auth_protocol http
+        openstack-config --set ${nova_api_conf} filter:authtoken auth_host ${KEYSTONE_HOST}
+        openstack-config --set ${nova_api_conf} filter:authtoken auth_port 35357
+        openstack-config --set ${nova_api_conf} filter:authtoken admin_tenant_name ${CINDER_OS_TENANT_NAME}
+        openstack-config --set ${nova_api_conf} filter:authtoken admin_user ${CINDER_OS_USERNAME}
+        openstack-config --set ${nova_api_conf} filter:authtoken admin_password ${CINDER_OS_PASSWORD}
+        openstack-config --set ${nova_api_conf} filter:authtoken singing_dir /var/lib/nova/keystone-singing-nova
+    fi
+}
+
+init_database() {
+    local MYSQL="mysql -h${MYSQL_HOST}"
+    ${MYSQL} -e "CREATE DATABASE IF NOT EXISTS ${NOVA_DB_NAME}"
+    ${MYSQL} -e "GRANT ALL ON ${NOVA_DB_NAME}.* TO '${NOVA_DB_USERNAME}'@'${MYSQL_HOST}' IDENTIFIED BY '${NOVA_DB_PASSWORD}'"
+    ${MYSQL} -e "FLUSH PRIVILEGES"
 }
 
 init_nova() {
     # handle database related config
     echo "Initializing nova ..."
+    init_database
+    nova-manage db sync
 }
 
 start_nova() {
@@ -37,4 +68,5 @@ stop_nova() {
 cleanup_nova() {
     # clean up nova packages
     echo "Cleaning up nova ..."
+    remove_package openstack-nova openstack-nova-console
 }
