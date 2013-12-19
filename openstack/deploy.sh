@@ -43,6 +43,9 @@ is_valid_service ${service} || usage
 
 ## source functions
 topdir=$(cd $(dirname $0) && pwd)
+if [ -f "${topdir}/fermentrc" ]; then
+    source ${topdir}/fermentrc
+fi
 source ${topdir}/lib/common
 source ${topdir}/lib/${service}
 
