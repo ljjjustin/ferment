@@ -9,26 +9,61 @@
 # - stop_cinder
 # - cleanup_cinder
 
+CINDER_DB_NAME=${CINDER_DB_NAME:-cinder}
+CINDER_DB_USERNAME=${CINDER_DB_USERNAME:-cinder}
+CINDER_DB_PASSWORD=${CINDER_DB_PASSWORD:-cinder}
+CINDER_OS_TENANT_NAME=${CINDER_OS_TENANT_NAME:-openstack}
+CINDER_OS_USERNAME=${CINDER_OS_USERNAME:-cinder}
+CINDER_OS_PASSWORD=${CINDER_OS_PASSWORD:-admin}
+
 install_cinder() {
     # install cinder related packages
+    install_package openstack-cinder
 }
 
 configure_cinder() {
     # modify cinder config file
+    cinder_conf='/etc/cinder/cinder.conf'
+    if [ -f ${cinder_conf} ]; then
+        openstack-config --set ${cinder_conf} DEFAULT connection mysql://${CINDER_DB_USERNAME}:${CINDER_DB_PASSWORD}@${MYSQL_HOST}/${CINDER_DB_NAME}
+        openstack-config --set ${cinder_conf} DEFAULT auth_strategy keystone
+    fi
+    cinder_api_conf='/etc/cinder/api-paste.ini'
+    if [ -f ${cinder_api_conf} ]; then
+        openstack-config --set ${cinder_api_conf} filter:authtoken auth_protocol http
+        openstack-config --set ${cinder_api_conf} filter:authtoken auth_host ${KEYSTONE_HOST}
+        openstack-config --set ${cinder_api_conf} filter:authtoken auth_port 35357
+        openstack-config --set ${cinder_api_conf} filter:authtoken admin_tenant_name ${CINDER_OS_TENANT_NAME}
+        openstack-config --set ${cinder_api_conf} filter:authtoken admin_user ${CINDER_OS_USERNAME}
+        openstack-config --set ${cinder_api_conf} filter:authtoken admin_password ${CINDER_OS_PASSWORD}
+        openstack-config --set ${cinder_api_conf} filter:authtoken singing_dir /var/lib/cinder/keystone-singing-cinder
+    fi
+}
+
+init_database() {
+    local MYSQL="mysql -h${MYSQL_HOST}"
+    ${MYSQL} -e "CREATE DATABASE IF NOT EXISTS ${CINDER_DB_NAME}"
+    ${MYSQL} -e "GRANT ALL ON ${CINDER_DB_NAME}.* TO '${CINDER_DB_USERNAME}'@'${MYSQL_HOST}' IDENTIFIED BY '${CINDER_DB_PASSWORD}'"
+    ${MYSQL} -e "FLUSH PRIVILEGES"
 }
 
 init_cinder() {
     # handle database related config
+    init_database
+    cinder-manage db sync
 }
 
 start_cinder() {
     # start cinder services
+    /etc/init.d/openstack-cinder-api start
 }
 
 stop_cinder() {
     # stop cinder services
+    /etc/init.d/openstack-cinder-api start
 }
 
 cleanup_cinder() {
     # clean up cinder packages
+    remove_package openstack-cinder
 }
