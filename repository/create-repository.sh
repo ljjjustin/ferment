@@ -54,7 +54,7 @@ YUM="yum -c ${yum_config_file}"
 YUMDOWNLOADER="yumdownloader -c ${yum_config_file} -y --resolve"
 ## install createrepo & yumdownloader
 ${YUM} clean all
-${YUM} install -y createrepo yum-utils
+${YUM} install -y httpd createrepo yum-utils
 
 ## download all necessary packages
 destdir="${openstack_reposdir}/centos/6/x86_64"
@@ -78,3 +78,4 @@ cat > /etc/httpd/conf.d/000-repo.conf <<EOF
     CustomLog logs/repository-access_log common
 </VirtualHost>
 EOF
+/etc/init.d/httpd restart
