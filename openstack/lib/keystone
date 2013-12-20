@@ -24,11 +24,11 @@ configure_keystone() {
     # modify keystone config file
     if [ -f ${keystone_conf} ]; then
         ## keystone admin token
-        openstack-config --set ${keystone_conf} DEFAULT admin_token ${KEYSTONE_SERVICE_TOKEN}
+        iniset ${keystone_conf} DEFAULT admin_token ${KEYSTONE_SERVICE_TOKEN}
         ## sql connection
-        openstack-config --set ${keystone_conf} sql connection mysql://${KEYSTONE_DB_USERNAME}:${KEYSTONE_DB_PASSWORD}@${MYSQL_HOST}/${KEYSTONE_DB_NAME}
+        iniset ${keystone_conf} sql connection mysql://${KEYSTONE_DB_USERNAME}:${KEYSTONE_DB_PASSWORD}@${MYSQL_HOST}/${KEYSTONE_DB_NAME}
         ## token format
-        openstack-config --set ${keystone_conf} signing token_format UUID
+        iniset ${keystone_conf} signing token_format UUID
     fi
 }
 

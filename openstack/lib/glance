@@ -25,29 +25,29 @@ configure_glance() {
     # modify glance config file
     glance_reg_conf='/etc/glance/glance-registry.conf'
     if [ -f ${glance_reg_conf} ]; then
-        openstack-config --set ${glance_reg_conf} DEFAULT sql_connection mysql://${GLANCE_DB_USERNAME}:${GLANCE_DB_PASSWORD}@${MYSQL_HOST}/${GLANCE_DB_NAME}
-        openstack-config --set ${glance_reg_conf} paste_deploy flavor keystone
-        openstack-config --set ${glance_reg_conf} keystone_authtoken auth_protocol http
-        openstack-config --set ${glance_reg_conf} keystone_authtoken auth_host ${KEYSTONE_HOST}
-        openstack-config --set ${glance_reg_conf} keystone_authtoken auth_port 35357
-        openstack-config --set ${glance_reg_conf} keystone_authtoken admin_tenant_name ${GLANCE_OS_TENANT_NAME}
-        openstack-config --set ${glance_reg_conf} keystone_authtoken admin_user ${GLANCE_OS_USERNAME}
-        openstack-config --set ${glance_reg_conf} keystone_authtoken admin_password ${GLANCE_OS_PASSWORD}
-        openstack-config --set ${glance_reg_conf} keystone_authtoken singing_dir /var/lib/glance/keystone-singing-glance
+        iniset ${glance_reg_conf} DEFAULT sql_connection mysql://${GLANCE_DB_USERNAME}:${GLANCE_DB_PASSWORD}@${MYSQL_HOST}/${GLANCE_DB_NAME}
+        iniset ${glance_reg_conf} paste_deploy flavor keystone
+        iniset ${glance_reg_conf} keystone_authtoken auth_protocol http
+        iniset ${glance_reg_conf} keystone_authtoken auth_host ${KEYSTONE_HOST}
+        iniset ${glance_reg_conf} keystone_authtoken auth_port 35357
+        iniset ${glance_reg_conf} keystone_authtoken admin_tenant_name ${GLANCE_OS_TENANT_NAME}
+        iniset ${glance_reg_conf} keystone_authtoken admin_user ${GLANCE_OS_USERNAME}
+        iniset ${glance_reg_conf} keystone_authtoken admin_password ${GLANCE_OS_PASSWORD}
+        iniset ${glance_reg_conf} keystone_authtoken singing_dir /var/lib/glance/keystone-singing-glance
     fi
     glance_api_conf='/etc/glance/glance-api.conf'
     if [ -f ${glance_api_conf} ]; then
-        openstack-config --set ${glance_api_conf} DEFAULT sql_connection mysql://${GLANCE_DB_USERNAME}:${GLANCE_DB_PASSWORD}@${MYSQL_HOST}/${GLANCE_DB_NAME}
-        openstack-config --set ${glance_api_conf} DEFAULT workers 4
-        openstack-config --set ${glance_api_conf} DEFAULT notifier_strategy noop
-        openstack-config --set ${glance_api_conf} paste_deploy flavor keystone
-        openstack-config --set ${glance_api_conf} keystone_authtoken auth_protocol http
-        openstack-config --set ${glance_api_conf} keystone_authtoken auth_host ${KEYSTONE_HOST}
-        openstack-config --set ${glance_api_conf} keystone_authtoken auth_port 35357
-        openstack-config --set ${glance_api_conf} keystone_authtoken admin_tenant_name ${GLANCE_OS_TENANT_NAME}
-        openstack-config --set ${glance_api_conf} keystone_authtoken admin_user ${GLANCE_OS_USERNAME}
-        openstack-config --set ${glance_api_conf} keystone_authtoken admin_password ${GLANCE_OS_PASSWORD}
-        openstack-config --set ${glance_api_conf} keystone_authtoken singing_dir /var/lib/glance/keystone-singing-glance
+        iniset ${glance_api_conf} DEFAULT sql_connection mysql://${GLANCE_DB_USERNAME}:${GLANCE_DB_PASSWORD}@${MYSQL_HOST}/${GLANCE_DB_NAME}
+        iniset ${glance_api_conf} DEFAULT workers 4
+        iniset ${glance_api_conf} DEFAULT notifier_strategy noop
+        iniset ${glance_api_conf} paste_deploy flavor keystone
+        iniset ${glance_api_conf} keystone_authtoken auth_protocol http
+        iniset ${glance_api_conf} keystone_authtoken auth_host ${KEYSTONE_HOST}
+        iniset ${glance_api_conf} keystone_authtoken auth_port 35357
+        iniset ${glance_api_conf} keystone_authtoken admin_tenant_name ${GLANCE_OS_TENANT_NAME}
+        iniset ${glance_api_conf} keystone_authtoken admin_user ${GLANCE_OS_USERNAME}
+        iniset ${glance_api_conf} keystone_authtoken admin_password ${GLANCE_OS_PASSWORD}
+        iniset ${glance_api_conf} keystone_authtoken singing_dir /var/lib/glance/keystone-singing-glance
     fi
 }
 

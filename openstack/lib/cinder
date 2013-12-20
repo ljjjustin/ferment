@@ -25,18 +25,18 @@ configure_cinder() {
     # modify cinder config file
     cinder_conf='/etc/cinder/cinder.conf'
     if [ -f ${cinder_conf} ]; then
-        openstack-config --set ${cinder_conf} DEFAULT connection mysql://${CINDER_DB_USERNAME}:${CINDER_DB_PASSWORD}@${MYSQL_HOST}/${CINDER_DB_NAME}
-        openstack-config --set ${cinder_conf} DEFAULT auth_strategy keystone
+        iniset ${cinder_conf} DEFAULT connection mysql://${CINDER_DB_USERNAME}:${CINDER_DB_PASSWORD}@${MYSQL_HOST}/${CINDER_DB_NAME}
+        iniset ${cinder_conf} DEFAULT auth_strategy keystone
     fi
     cinder_api_conf='/etc/cinder/api-paste.ini'
     if [ -f ${cinder_api_conf} ]; then
-        openstack-config --set ${cinder_api_conf} filter:authtoken auth_protocol http
-        openstack-config --set ${cinder_api_conf} filter:authtoken auth_host ${KEYSTONE_HOST}
-        openstack-config --set ${cinder_api_conf} filter:authtoken auth_port 35357
-        openstack-config --set ${cinder_api_conf} filter:authtoken admin_tenant_name ${CINDER_OS_TENANT_NAME}
-        openstack-config --set ${cinder_api_conf} filter:authtoken admin_user ${CINDER_OS_USERNAME}
-        openstack-config --set ${cinder_api_conf} filter:authtoken admin_password ${CINDER_OS_PASSWORD}
-        openstack-config --set ${cinder_api_conf} filter:authtoken singing_dir /var/lib/cinder/keystone-singing-cinder
+        iniset ${cinder_api_conf} filter:authtoken auth_protocol http
+        iniset ${cinder_api_conf} filter:authtoken auth_host ${KEYSTONE_HOST}
+        iniset ${cinder_api_conf} filter:authtoken auth_port 35357
+        iniset ${cinder_api_conf} filter:authtoken admin_tenant_name ${CINDER_OS_TENANT_NAME}
+        iniset ${cinder_api_conf} filter:authtoken admin_user ${CINDER_OS_USERNAME}
+        iniset ${cinder_api_conf} filter:authtoken admin_password ${CINDER_OS_PASSWORD}
+        iniset ${cinder_api_conf} filter:authtoken singing_dir /var/lib/cinder/keystone-singing-cinder
     fi
 }
 

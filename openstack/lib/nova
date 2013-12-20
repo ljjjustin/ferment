@@ -27,17 +27,17 @@ configure_nova() {
     echo "Configuring nova ..."
     nova_conf='/etc/nova/nova.conf'
     if [ -f ${nova_reg_conf} ]; then
-        openstack-config --set ${nova_conf} DEFAULT sql_connection mysql://${NOVA_DB_USERNAME}:${NOVA_DB_PASSWORD}@${MYSQL_HOST}/${NOVA_DB_NAME}
+        iniset ${nova_conf} DEFAULT sql_connection mysql://${NOVA_DB_USERNAME}:${NOVA_DB_PASSWORD}@${MYSQL_HOST}/${NOVA_DB_NAME}
     fi
     nova_api_conf='/etc/nova/api-paste.ini'
     if [ -f ${nova_api_conf} ]; then
-        openstack-config --set ${nova_api_conf} filter:authtoken auth_protocol http
-        openstack-config --set ${nova_api_conf} filter:authtoken auth_host ${KEYSTONE_HOST}
-        openstack-config --set ${nova_api_conf} filter:authtoken auth_port 35357
-        openstack-config --set ${nova_api_conf} filter:authtoken admin_tenant_name ${NOVA_OS_TENANT_NAME}
-        openstack-config --set ${nova_api_conf} filter:authtoken admin_user ${NOVA_OS_USERNAME}
-        openstack-config --set ${nova_api_conf} filter:authtoken admin_password ${NOVA_OS_PASSWORD}
-        openstack-config --set ${nova_api_conf} filter:authtoken singing_dir /var/lib/nova/keystone-singing-nova
+        iniset ${nova_api_conf} filter:authtoken auth_protocol http
+        iniset ${nova_api_conf} filter:authtoken auth_host ${KEYSTONE_HOST}
+        iniset ${nova_api_conf} filter:authtoken auth_port 35357
+        iniset ${nova_api_conf} filter:authtoken admin_tenant_name ${NOVA_OS_TENANT_NAME}
+        iniset ${nova_api_conf} filter:authtoken admin_user ${NOVA_OS_USERNAME}
+        iniset ${nova_api_conf} filter:authtoken admin_password ${NOVA_OS_PASSWORD}
+        iniset ${nova_api_conf} filter:authtoken singing_dir /var/lib/nova/keystone-singing-nova
     fi
 }
 
