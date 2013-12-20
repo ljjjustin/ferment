@@ -55,7 +55,7 @@ configure_nova() {
         iniset ${nova_conf} DEFAULT vncserver_proxyclient_address ${HOST_IP}
         iniset ${nova_conf} DEFAULT novncproxy_base_url http://${SERVICE_HOST}:6080/vnc_auto.html
         # glance url
-        iniset ${nova_conf} DEFAULT glance_api_servers ${GLANCE_HOST}
+        iniset ${nova_conf} DEFAULT glance_api_servers "${GLANCE_HOST}:9292"
         # keystone auth
         iniset ${nova_conf} keystone_authtoken auth_protocol http
         iniset ${nova_conf} keystone_authtoken auth_host ${KEYSTONE_HOST}
