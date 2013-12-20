@@ -47,12 +47,24 @@ init_database() {
     ${MYSQL} -e "FLUSH PRIVILEGES"
 }
 
+ensure_cinder_service_catalog() {
+    local service_name='cinder'
+    local service_type='volume'
+    local service_desc='Cinder Volume Service'
+    local public_url="http://${SERVICE_HOST}:8776/v1/\$(tenant_id)s"
+    local admin_url="http://${SERVICE_HOST}:8776/v1/\$(tenant_id)s"
+    local internal_url="http://${SERVICE_HOST}:8776/v1/\$(tenant_id)s"
+
+    ensure_keystone_service "${service_name}" "${service_type}" "${service_desc}" "${public_url}" "${admin_url}" "${internal_url}"
+    ensure_keystone_accounts "${CINDER_OS_TENANT_NAME}" "${CINDER_OS_USERNAME}" "${CINDER_OS_PASSWORD}" 'admin'
+}
+
 init_cinder() {
+    chkconfig openstack-cinder-api on
     # handle database related config
     init_database
     cinder-manage db sync
-    chkconfig openstack-cinder-api on
-    ensure_keystone_accounts ${CINDER_OS_TENANT_NAME} ${CINDER_OS_USERNAME} ${CINDER_OS_PASSWORD} admin
+    ensure_cinder_service_catalog
 }
 
 start_cinder() {

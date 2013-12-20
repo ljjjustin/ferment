@@ -151,32 +151,32 @@ get_keystone_user_role() {
 
 ensure_keystone_tenant() {
     local tenant_name=$1
-    local tenant_id=$(get_keystone_tenant_id ${tenant_name})
+    local tenant_id=$(get_keystone_tenant_id "${tenant_name}")
 
     if [[ -z "${tenant_id}" ]]; then
-        keystone tenant-create --name=${tenant_name} --description "${tenant_name} tenant"
+        keystone tenant-create --name "${tenant_name}" --description "${tenant_name} tenant"
     fi
 }
 
 ensure_keystone_user() {
     local username=$1
     local password=$2
-    local user_id=$(get_keystone_user_id ${username})
+    local user_id=$(get_keystone_user_id "${username}")
 
     # create user if not exists
     if [[ -z "${user_id}" ]]; then
-        keystone user-create --name=${username} --pass=${password}
+        keystone user-create --name "${username}" --pass "${password}"
     fi
     # reset user password
-    keystone user-password-update --pass ${password} ${username}
+    keystone user-password-update --pass "${password}" "${username}"
 }
 
 ensure_keystone_role() {
     local role_name=$1
-    local role_id=$(get_keystone_role_id ${role_name})
+    local role_id=$(get_keystone_role_id "${role_name}")
 
     if [[ -z "${role_id}" ]]; then
-        keystone role-create --name=${role_name}
+        keystone role-create --name "${role_name}"
     fi
 }
 
@@ -184,19 +184,19 @@ ensure_keystone_user_role() {
     local tenant_name=$1
     local username=$2
     local role_name=$3
-    local user_role=$(get_keystone_user_role ${tenant_name} ${username} ${role_name})
+    local user_role=$(get_keystone_user_role "${tenant_name}" "${username}" "${role_name}")
 
-    ensure_keystone_role ${role_name}
+    ensure_keystone_role "${role_name}"
 
     if [[ -z "${user_role}" ]]; then
-        keystone user-role-add --tenant ${tenant_name} --user ${username} --role ${role_name}
+        keystone user-role-add --tenant "${tenant_name}" --user "${username}" --role "${role_name}"
     fi
 }
 
 init_keystone_auth() {
     local keystone_conf='/etc/keystone/keystone.conf'
     export OS_CACHE=false
-    export OS_SERVICE_TOKEN=$(iniget ${keystone_conf} DEFAULT admin_token)
+    export OS_SERVICE_TOKEN=$(iniget "${keystone_conf}" DEFAULT admin_token)
     export OS_SERVICE_ENDPOINT="http://${SERVICE_HOST}:35357/v2.0"
 }
 
@@ -207,9 +207,9 @@ ensure_keystone_accounts() {
     local role_name=$4
 
     init_keystone_auth
-    ensure_keystone_tenant ${tenant_name}
-    ensure_keystone_user ${username} ${password}
-    ensure_keystone_user_role ${tenant_name} ${username} ${role_name}
+    ensure_keystone_tenant "${tenant_name}"
+    ensure_keystone_user "${username}" "${password}"
+    ensure_keystone_user_role "${tenant_name}" "${username}" "${role_name}"
 }
 
 ensure_keystone_service() {
@@ -221,10 +221,10 @@ ensure_keystone_service() {
     local internal_url=$6
 
     init_keystone_auth
-    service_id=$(get_keystone_service_id ${service_name})
+    service_id=$(get_keystone_service_id "${service_name}")
     if [[ -z "${service_id}" ]]; then
-        service_id=$(get_id keystone service-create --name=${service_name} --type=${service_type} --description=${service_desc})
-        keystone endpoint-create --region RegionOne --service-id ${service_id} --publicurl "${public_url}" --adminurl "${admin_url}"  --internalurl "${internal_url}"
+        service_id=$(get_id keystone service-create --name "${service_name}" --type "${service_type}" --description "${service_desc}")
+        keystone endpoint-create --region RegionOne --service-id "${service_id}" --publicurl "${public_url}" --adminurl "${admin_url}"  --internalurl "${internal_url}"
     fi
 }
 

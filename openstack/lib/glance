@@ -58,13 +58,25 @@ init_database() {
     ${MYSQL} -e "FLUSH PRIVILEGES"
 }
 
+ensure_glance_service_catalog() {
+    local service_name='glance'
+    local service_type='image'
+    local service_desc='Glance Image Service'
+    local public_url="http://${SERVICE_HOST}:9292/v1"
+    local admin_url="http://${SERVICE_HOST}:9292/v1"
+    local internal_url="http://${SERVICE_HOST}:9292/v1"
+
+    ensure_keystone_service "${service_name}" "${service_type}" "${service_desc}" "${public_url}" "${admin_url}" "${internal_url}"
+    ensure_keystone_accounts "${GLANCE_OS_TENANT_NAME}" "${GLANCE_OS_USERNAME}" "${GLANCE_OS_PASSWORD}" 'admin'
+}
+
 init_glance() {
+    chkconfig openstack-glance-registry on
+    chkconfig openstack-glance-api on
     # handle database related config
     init_database
     glance-manage db_sync
-    chkconfig openstack-glance-registry on
-    chkconfig openstack-glance-api on
-    ensure_keystone_accounts ${GLANCE_OS_TENANT_NAME} ${GLANCE_OS_USERNAME} ${GLANCE_OS_PASSWORD} admin
+    ensure_glance_service_catalog
 }
 
 start_glance() {
