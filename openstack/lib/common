@@ -118,6 +118,10 @@ get_field() {
     done
 }
 
+get_id () {
+    echo `"$@" | grep ' id ' | awk '{print $4}'`
+}
+
 get_keystone_tenant_id() {
     local tenant_name=$1
     keystone tenant-list | grep " ${tenant_name} " | get_field 1
@@ -131,6 +135,11 @@ get_keystone_user_id() {
 get_keystone_role_id() {
     local role_name=$1
     keystone role-list | grep " ${role_name} " | get_field 1
+}
+
+get_keystone_service_id() {
+    local service_name=$1
+    keystone service-list | grep " ${service_name} " | get_field 1
 }
 
 get_keystone_user_role() {
@@ -201,6 +210,22 @@ ensure_keystone_accounts() {
     ensure_keystone_tenant ${tenant_name}
     ensure_keystone_user ${username} ${password}
     ensure_keystone_user_role ${tenant_name} ${username} ${role_name}
+}
+
+ensure_keystone_service() {
+    local service_name=$1
+    local service_type=$2
+    local service_desc=$3
+    local public_url=$4
+    local admin_url=$5
+    local internal_url=$6
+
+    init_keystone_auth
+    service_id=$(get_keystone_service_id ${service_name})
+    if [[ -z "${service_id}" ]]; then
+        service_id=$(get_id keystone service-create --name=${service_name} --type=${service_type} --description=${service_desc})
+        keystone endpoint-create --region RegionOne --service-id ${service_id} --publicurl "${public_url}" --adminurl "${admin_url}"  --internalurl "${internal_url}"
+    fi
 }
 
 init_repository

@@ -39,11 +39,24 @@ init_database() {
     ${MYSQL} -e "FLUSH PRIVILEGES"
 }
 
+ensure_keystone_service_catalog() {
+    local service_name='keystone'
+    local service_type='identity'
+    local service_desc='Keystone Identity Service'
+    local public_url="http://${SERVICE_HOST}:5000/v2.0"
+    local admin_url="http://${SERVICE_HOST}:35357/v2.0"
+    local internal_url="http://${SERVICE_HOST}:5000/v2.0"
+
+    start_keystone && sleep 3
+    ensure_keystone_service ${service_name} ${service_type} ${service_desc} ${public_url} ${admin_url} ${internal_url}
+}
+
 init_keystone() {
     # handle database related config
     init_database
     keystone-manage db_sync
     chkconfig openstack-keystone on
+    ensure_keystone_service_catalog
 }
 
 start_keystone() {
