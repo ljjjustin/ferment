@@ -18,11 +18,13 @@ GLANCE_OS_PASSWORD=${GLANCE_OS_PASSWORD:-admin}
 
 install_glance() {
     # install glance related packages
+    echo "Installing glance ..."
     install_package openstack-glance
 }
 
 configure_glance() {
     # modify glance config file
+    echo "Configuring glance ..."
     glance_reg_conf='/etc/glance/glance-registry.conf'
     if [ -f ${glance_reg_conf} ]; then
         iniset ${glance_reg_conf} DEFAULT sql_connection mysql://${GLANCE_DB_USERNAME}:${GLANCE_DB_PASSWORD}@${MYSQL_HOST}/${GLANCE_DB_NAME}
@@ -71,6 +73,7 @@ ensure_glance_service_catalog() {
 }
 
 init_glance() {
+    echo "Initializing glance ..."
     chkconfig openstack-glance-registry on
     chkconfig openstack-glance-api on
     # handle database related config
@@ -81,17 +84,20 @@ init_glance() {
 
 start_glance() {
     # start glance services
+    echo "Starting glance ..."
     /etc/init.d/openstack-glance-registry start
     /etc/init.d/openstack-glance-api start
 }
 
 stop_glance() {
     # stop glance services
+    echo "Stopping glance ..."
     /etc/init.d/openstack-glance-api stop
     /etc/init.d/openstack-glance-registry stop
 }
 
 cleanup_glance() {
     # clean up glance packages
+    echo "Cleaning up glance ..."
     remove_package openstack-glance
 }

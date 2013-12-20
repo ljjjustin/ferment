@@ -17,11 +17,13 @@ CINDER_OS_USERNAME=${CINDER_OS_USERNAME:-cinder}
 CINDER_OS_PASSWORD=${CINDER_OS_PASSWORD:-admin}
 
 install_cinder() {
+    echo "Installing cinder ..."
     # install cinder related packages
     install_package openstack-cinder
 }
 
 configure_cinder() {
+    echo "Configuring cinder ..."
     # modify cinder config file
     cinder_conf='/etc/cinder/cinder.conf'
     if [ -f ${cinder_conf} ]; then
@@ -60,6 +62,7 @@ ensure_cinder_service_catalog() {
 }
 
 init_cinder() {
+    echo "Initializing cinder ..."
     chkconfig openstack-cinder-api on
     # handle database related config
     init_database
@@ -69,15 +72,18 @@ init_cinder() {
 
 start_cinder() {
     # start cinder services
+    echo "Starting cinder ..."
     /etc/init.d/openstack-cinder-api start
 }
 
 stop_cinder() {
     # stop cinder services
-    /etc/init.d/openstack-cinder-api start
+    echo "Stopping cinder ..."
+    /etc/init.d/openstack-cinder-api stop
 }
 
 cleanup_cinder() {
     # clean up cinder packages
+    echo "Cleaning up cinder ..."
     remove_package openstack-cinder
 }

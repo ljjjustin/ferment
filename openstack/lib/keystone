@@ -16,10 +16,12 @@ KEYSTONE_DB_PASSWORD=${KEYSTONE_DB_PASSWORD:-keystone}
 
 install_keystone() {
     # install keystone related packages
+    echo "Installing keystone ..."
     install_package openstack-keystone
 }
 
 configure_keystone() {
+    echo "Configuring keystone ..."
     keystone_conf='/etc/keystone/keystone.conf'
     # modify keystone config file
     if [ -f ${keystone_conf} ]; then
@@ -52,6 +54,7 @@ ensure_keystone_service_catalog() {
 }
 
 init_keystone() {
+    echo "Initializing keystone ..."
     chkconfig openstack-keystone on
     # handle database related config
     init_database
@@ -61,15 +64,18 @@ init_keystone() {
 
 start_keystone() {
     # start keystone services
+    echo "Starting keystone ..."
     /etc/init.d/openstack-keystone start
 }
 
 stop_keystone() {
     # stop keystone services
+    echo "Stopping keystone ..."
     /etc/init.d/openstack-keystone stop
 }
 
 cleanup_keystone() {
+    echo "Cleaning up keystone ..."
     # clean up keystone packages
     remove_package openstack-keystone
 }
