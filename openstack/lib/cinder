@@ -52,6 +52,7 @@ init_cinder() {
     init_database
     cinder-manage db sync
     chkconfig openstack-cinder-api on
+    ensure_keystone_accounts ${CINDER_OS_TENANT_NAME} ${CINDER_OS_USERNAME} ${CINDER_OS_PASSWORD} admin
 }
 
 start_cinder() {

@@ -89,6 +89,7 @@ init_nova() {
     echo "Initializing nova ..."
     init_database
     nova-manage db sync
+    ensure_keystone_accounts ${NOVA_OS_TENANT_NAME} ${NOVA_OS_USERNAME} ${NOVA_OS_PASSWORD} admin
 }
 
 start_nova() {

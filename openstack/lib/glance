@@ -64,6 +64,7 @@ init_glance() {
     glance-manage db_sync
     chkconfig openstack-glance-registry on
     chkconfig openstack-glance-api on
+    ensure_keystone_accounts ${GLANCE_OS_TENANT_NAME} ${GLANCE_OS_USERNAME} ${GLANCE_OS_PASSWORD} admin
 }
 
 start_glance() {
