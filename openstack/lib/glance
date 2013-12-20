@@ -33,7 +33,7 @@ configure_glance() {
         iniset ${glance_reg_conf} keystone_authtoken admin_tenant_name ${GLANCE_OS_TENANT_NAME}
         iniset ${glance_reg_conf} keystone_authtoken admin_user ${GLANCE_OS_USERNAME}
         iniset ${glance_reg_conf} keystone_authtoken admin_password ${GLANCE_OS_PASSWORD}
-        iniset ${glance_reg_conf} keystone_authtoken singing_dir /var/lib/glance/keystone-singing-glance
+        iniset ${glance_reg_conf} keystone_authtoken signing_dir /var/lib/glance/keystone-singing-glance
     fi
     glance_api_conf='/etc/glance/glance-api.conf'
     if [ -f ${glance_api_conf} ]; then
@@ -47,7 +47,7 @@ configure_glance() {
         iniset ${glance_api_conf} keystone_authtoken admin_tenant_name ${GLANCE_OS_TENANT_NAME}
         iniset ${glance_api_conf} keystone_authtoken admin_user ${GLANCE_OS_USERNAME}
         iniset ${glance_api_conf} keystone_authtoken admin_password ${GLANCE_OS_PASSWORD}
-        iniset ${glance_api_conf} keystone_authtoken singing_dir /var/lib/glance/keystone-singing-glance
+        iniset ${glance_api_conf} keystone_authtoken signing_dir /var/lib/glance/keystone-singing-glance
     fi
 }
 

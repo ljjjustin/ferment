@@ -36,7 +36,7 @@ configure_cinder() {
         iniset ${cinder_api_conf} filter:authtoken admin_tenant_name ${CINDER_OS_TENANT_NAME}
         iniset ${cinder_api_conf} filter:authtoken admin_user ${CINDER_OS_USERNAME}
         iniset ${cinder_api_conf} filter:authtoken admin_password ${CINDER_OS_PASSWORD}
-        iniset ${cinder_api_conf} filter:authtoken singing_dir /var/lib/cinder/keystone-singing-cinder
+        iniset ${cinder_api_conf} filter:authtoken signing_dir /var/lib/cinder/keystone-singing-cinder
     fi
 }
 

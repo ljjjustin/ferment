@@ -58,13 +58,14 @@ configure_nova() {
         # glance url
         iniset ${nova_conf} DEFAULT glance_api_servers "${GLANCE_HOST}:9292"
         # keystone auth
+        iniset ${nova_conf} DEFAULT auth_strategy keystone
         iniset ${nova_conf} keystone_authtoken auth_protocol http
         iniset ${nova_conf} keystone_authtoken auth_host ${KEYSTONE_HOST}
         iniset ${nova_conf} keystone_authtoken auth_port 35357
         iniset ${nova_conf} keystone_authtoken admin_tenant_name ${NOVA_OS_TENANT_NAME}
         iniset ${nova_conf} keystone_authtoken admin_user ${NOVA_OS_USERNAME}
         iniset ${nova_conf} keystone_authtoken admin_password ${NOVA_OS_PASSWORD}
-        iniset ${nova_conf} keystone_authtoken singing_dir /var/lib/nova/keystone-singing-nova
+        iniset ${nova_conf} keystone_authtoken signing_dir /var/lib/nova/keystone-singing-nova
 
         if is_service_enabled compute; then
             # libvirt
@@ -96,7 +97,7 @@ configure_nova() {
         iniset ${nova_api_conf} filter:authtoken admin_tenant_name ${NOVA_OS_TENANT_NAME}
         iniset ${nova_api_conf} filter:authtoken admin_user ${NOVA_OS_USERNAME}
         iniset ${nova_api_conf} filter:authtoken admin_password ${NOVA_OS_PASSWORD}
-        iniset ${nova_api_conf} filter:authtoken singing_dir /var/lib/nova/keystone-singing-nova
+        iniset ${nova_api_conf} filter:authtoken signing_dir /var/lib/nova/keystone-singing-nova
     fi
 }
 
