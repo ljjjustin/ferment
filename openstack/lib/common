@@ -104,4 +104,103 @@ $option = $value
     fi
 }
 
+# Grab a numbered field from python prettytable output
+# Fields are numbered starting with 1
+# Reverse syntax is supported: -1 is the last field, -2 is second to last, etc.
+get_field() {
+    while read data; do
+        if [ "$1" -lt 0 ]; then
+            field="(\$(NF$1))"
+        else
+            field="\$$(($1 + 1))"
+        fi
+        echo "$data" | awk -F'[ \t]*\\|[ \t]*' "{print $field}"
+    done
+}
+
+get_keystone_tenant_id() {
+    local tenant_name=$1
+    keystone tenant-list | grep " ${tenant_name} " | get_field 1
+}
+
+get_keystone_user_id() {
+    local username=$1
+    keystone user-list | grep " ${username} " | get_field 1
+}
+
+get_keystone_role_id() {
+    local role_name=$1
+    keystone role-list | grep " ${role_name} " | get_field 1
+}
+
+get_keystone_user_role() {
+    local tenant_name=$1
+    local username=$2
+    local role_name=$3
+    keystone user-role-list --tenant "${tenant_name}" --user "${username}" | grep " ${role_name} " | get_field 1
+}
+
+ensure_keystone_tenant() {
+    local tenant_name=$1
+    local tenant_id=$(get_keystone_tenant_id ${tenant_name})
+
+    if [[ -z "${tenant_id}" ]]; then
+        keystone tenant-create --name=${tenant_name} --description "${tenant_name} tenant"
+    fi
+}
+
+ensure_keystone_user() {
+    local username=$1
+    local password=$2
+    local user_id=$(get_keystone_user_id ${username})
+
+    # create user if not exists
+    if [[ -z "${user_id}" ]]; then
+        keystone user-create --name=${username} --pass=${password}
+    fi
+    # reset user password
+    keystone user-password-update --pass ${password} ${username}
+}
+
+ensure_keystone_role() {
+    local role_name=$1
+    local role_id=$(get_keystone_role_id ${role_name})
+
+    if [[ -z "${role_id}" ]]; then
+        keystone role-create --name=${role_name}
+    fi
+}
+
+ensure_keystone_user_role() {
+    local tenant_name=$1
+    local username=$2
+    local role_name=$3
+    local user_role=$(get_keystone_user_role ${tenant_name} ${username} ${role_name})
+
+    ensure_keystone_role ${role_name}
+
+    if [[ -z "${user_role}" ]]; then
+        keystone user-role-add --tenant ${tenant_name} --user ${username} --role ${role_name}
+    fi
+}
+
+init_keystone_auth() {
+    local keystone_conf='/etc/keystone/keystone.conf'
+    export OS_CACHE=false
+    export OS_SERVICE_TOKEN=$(iniget ${keystone_conf} DEFAULT admin_token)
+    export OS_SERVICE_ENDPOINT="http://${SERVICE_HOST}:35357/v2.0"
+}
+
+ensure_keystone_accounts() {
+    local tenant_name=$1
+    local username=$2
+    local password=$3
+    local role_name=$4
+
+    init_keystone_auth
+    ensure_keystone_tenant ${tenant_name}
+    ensure_keystone_user ${username} ${password}
+    ensure_keystone_user_role ${tenant_name} ${username} ${role_name}
+}
+
 init_repository
