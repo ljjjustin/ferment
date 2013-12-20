@@ -2,12 +2,12 @@
 
 usage() {
     echo "usage: $0 <command> <service>"
-    echo "<command>: [install, config, remove, reinstall]"
+    echo "<command>: [install, config, start, stop, remove, reinstall]"
     echo "<service>: [mysql, rabbitmq, keystone, glance, cinder, nova]"
     exit
 }
 
-ALL_COMMANDS=('install' 'config' 'remove' 'reinstall')
+ALL_COMMANDS=('install' 'config' 'start' 'stop' 'remove' 'reinstall')
 ALL_SERVICES=('mysql' 'rabbitmq' 'keystone' 'glance' 'cinder' 'nova')
 
 is_valid_command() {
@@ -55,6 +55,10 @@ if [ "${command}" == "install" ]; then
     eval "init_${service}"
 elif [ "${command}" == "config" ]; then
     eval "configure_${service}"
+elif [ "${command}" == "start" ]; then
+    eval "start_${service}"
+elif [ "${command}" == "stop" ]; then
+    eval "stop_${service}"
 elif [ "${command}" == "remove" ]; then
     eval "stop_${service}"
     eval "cleanup_${service}"
