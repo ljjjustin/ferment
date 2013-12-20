@@ -34,9 +34,9 @@ configure_nova() {
         openstack-config --set ${nova_api_conf} filter:authtoken auth_protocol http
         openstack-config --set ${nova_api_conf} filter:authtoken auth_host ${KEYSTONE_HOST}
         openstack-config --set ${nova_api_conf} filter:authtoken auth_port 35357
-        openstack-config --set ${nova_api_conf} filter:authtoken admin_tenant_name ${CINDER_OS_TENANT_NAME}
-        openstack-config --set ${nova_api_conf} filter:authtoken admin_user ${CINDER_OS_USERNAME}
-        openstack-config --set ${nova_api_conf} filter:authtoken admin_password ${CINDER_OS_PASSWORD}
+        openstack-config --set ${nova_api_conf} filter:authtoken admin_tenant_name ${NOVA_OS_TENANT_NAME}
+        openstack-config --set ${nova_api_conf} filter:authtoken admin_user ${NOVA_OS_USERNAME}
+        openstack-config --set ${nova_api_conf} filter:authtoken admin_password ${NOVA_OS_PASSWORD}
         openstack-config --set ${nova_api_conf} filter:authtoken singing_dir /var/lib/nova/keystone-singing-nova
     fi
 }
