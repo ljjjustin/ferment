@@ -43,6 +43,7 @@ init_keystone() {
     # handle database related config
     init_database
     keystone-manage db_sync
+    chkconfig openstack-keystone on
 }
 
 start_keystone() {

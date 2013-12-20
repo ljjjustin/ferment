@@ -62,6 +62,8 @@ init_glance() {
     # handle database related config
     init_database
     glance-manage db_sync
+    chkconfig openstack-glance-registry on
+    chkconfig openstack-glance-api on
 }
 
 start_glance() {

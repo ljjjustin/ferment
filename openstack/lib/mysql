@@ -23,6 +23,7 @@ configure_mysql() {
 init_mysql() {
     # handle database related config
     echo "Initializing mysql ..."
+    chkconfig mysqld on
 }
 
 start_mysql() {

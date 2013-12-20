@@ -51,6 +51,7 @@ init_cinder() {
     # handle database related config
     init_database
     cinder-manage db sync
+    chkconfig openstack-cinder-api on
 }
 
 start_cinder() {

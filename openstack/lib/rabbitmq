@@ -23,6 +23,7 @@ configure_rabbitmq() {
 init_rabbitmq() {
     # handle database related config
     echo "Initializing rabbitmq ..."
+    chkconfig rabbitmq-server on
 }
 
 start_rabbitmq() {
