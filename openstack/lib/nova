@@ -136,9 +136,22 @@ ensure_nova_service_catalog() {
 init_nova() {
     # handle database related config
     echo "Initializing nova ..."
-    init_database
-    nova-manage db sync
-    ensure_nova_service_catalog
+    local service
+    local services=(${NOVA_SERVICES//,/ })
+
+    if is_service_enabled compute; then
+        chkconfig messagebus on
+        chkconfig libvirtd on
+    fi
+    for service in ${services[@]}; do
+        chkconfig "${service}" on
+    fi
+
+    if is_service_enabled api; then
+        init_database
+        nova-manage db sync
+        ensure_nova_service_catalog
+    fi
 }
 
 start_nova() {
@@ -146,6 +159,11 @@ start_nova() {
     echo "Starting nova ..."
     local service
     local services=(${NOVA_SERVICES//,/ })
+
+    if is_service_enabled compute; then
+        /etc/init.d/messagebus start
+        /etc/init.d/libvirtd start
+    fi
     for service in ${services[@]}; do
         script="/etc/init.d/openstack-nova-${service}"
         if [ -f "${script}" ]; then
