@@ -9,7 +9,7 @@
 # - stop_nova
 # - cleanup_nova
 
-NOVA_SERVICES=${NOVA_SERVICES:-'api, conductor, scheduler, compute, network, consoleauth, novncproxy'}
+NOVA_SERVICES=${NOVA_SERVICES:-'api,metadata-api,conductor,scheduler,consoleauth,novncproxy,compute,network'}
 
 NOVA_DB_NAME=${NOVA_DB_NAME:-nova}
 NOVA_DB_USERNAME=${NOVA_DB_USERNAME:-nova}
@@ -31,7 +31,7 @@ install_nova() {
 }
 
 is_service_enabled() {
-    local service=''
+    local service
     for service in "$@"; do
         [[ ,${NOVA_SERVICES}, =~ ,${service}, ]] && return 0
     done
@@ -67,6 +67,10 @@ configure_nova() {
         iniset ${nova_conf} keystone_authtoken admin_password ${NOVA_OS_PASSWORD}
         iniset ${nova_conf} keystone_authtoken signing_dir /var/lib/nova/keystone-singing-nova
 
+        if is_service_enabled api metadata-api; then
+            iniset ${nova_conf} DEFAULT enabled_apis ec2,osapi_compute
+        fi
+
         if is_service_enabled compute; then
             # libvirt
             iniset ${nova_conf} DEFAULT connection_type libvirt
@@ -79,7 +83,6 @@ configure_nova() {
         fi
         if is_service_enabled network; then
             # network
-            iniset ${nova_conf} DEFAULT allow_same_net_traffic False
             iniset ${nova_conf} DEFAULT multi_host True
             iniset ${nova_conf} DEFAULT send_arp_for_ha True
             iniset ${nova_conf} DEFAULT network_manager ${NETWORK_MANAGER}
@@ -141,11 +144,27 @@ init_nova() {
 start_nova() {
     # start nova services
     echo "Starting nova ..."
+    local service
+    local services=(${NOVA_SERVICES//,/ })
+    for service in ${services[@]}; do
+        script="/etc/init.d/openstack-nova-${service}"
+        if [ -f "${script}" ]; then
+            eval "${script} start"
+        fi
+    done
 }
 
 stop_nova() {
     # stop nova services
     echo "Stopping nova ..."
+    local service
+    local services=(${NOVA_SERVICES//,/ })
+    for service in ${services[@]}; do
+        script="/etc/init.d/openstack-nova-${service}"
+        if [ -f "${script}" ]; then
+            eval "${script} stop"
+        fi
+    done
 }
 
 cleanup_nova() {

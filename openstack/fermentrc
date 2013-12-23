@@ -1,7 +1,12 @@
+## common services
 MYSQL_HOST=localhost
-SERVICE_HOST=localhost
+RABBIT_HOSTS=127.0.0.1:5672
+SERVICE_HOST=172.16.1.51
 KEYSTONE_HOST=localhost
 GLANCE_HOST=localhost
-RABBIT_HOSTS=127.0.0.1:5672
-FLAT_INTERFACE=eth0
-PUBLIC_INTERFACE=br100
+
+## config nova services
+NOVA_SERVICES='api,metadata-api,conductor,scheduler,consoleauth,novncproxy,network,compute'
+PUBLIC_INTERFACE=eth0
+NETWORK_MANAGER=nova.network.manager.VlanManager
+VLAN_INTERFACE=eth1
