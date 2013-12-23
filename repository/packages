@@ -9,8 +9,13 @@ openstack-glance
 # cinder
 openstack-cinder
 # nova
-openstack-nova
+rsync
+openstack-nova-api
 openstack-nova-conductor
+openstack-nova-scheduler
+openstack-nova-novncproxy
 openstack-nova-console
+openstack-nova-network
+openstack-nova-compute
 # horizon
 openstack-dashboard
