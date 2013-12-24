@@ -35,10 +35,7 @@ configure_keystone() {
 }
 
 init_database() {
-    local MYSQL="mysql -h${MYSQL_HOST}"
-    ${MYSQL} -e "CREATE DATABASE IF NOT EXISTS ${KEYSTONE_DB_NAME}"
-    ${MYSQL} -e "GRANT ALL ON ${KEYSTONE_DB_NAME}.* TO '${KEYSTONE_DB_USERNAME}'@'${MYSQL_HOST}' IDENTIFIED BY '${KEYSTONE_DB_PASSWORD}'"
-    ${MYSQL} -e "FLUSH PRIVILEGES"
+    ensure_mysql_database "${MYSQL_HOST}" "${KEYSTONE_DB_USERNAME}" "${KEYSTONE_DB_PASSWORD}" "${KEYSTONE_DB_NAME}"
 }
 
 ensure_keystone_service_catalog() {
@@ -49,7 +46,7 @@ ensure_keystone_service_catalog() {
     local admin_url="http://${SERVICE_HOST}:35357/v2.0"
     local internal_url="http://${SERVICE_HOST}:5000/v2.0"
 
-    start_keystone && sleep 3
+    start_keystone && sleep 5
     ensure_keystone_service "${service_name}" "${service_type}" "${service_desc}" "${public_url}" "${admin_url}" "${internal_url}"
 }
 

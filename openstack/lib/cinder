@@ -43,10 +43,7 @@ configure_cinder() {
 }
 
 init_database() {
-    local MYSQL="mysql -h${MYSQL_HOST}"
-    ${MYSQL} -e "CREATE DATABASE IF NOT EXISTS ${CINDER_DB_NAME}"
-    ${MYSQL} -e "GRANT ALL ON ${CINDER_DB_NAME}.* TO '${CINDER_DB_USERNAME}'@'${MYSQL_HOST}' IDENTIFIED BY '${CINDER_DB_PASSWORD}'"
-    ${MYSQL} -e "FLUSH PRIVILEGES"
+    ensure_mysql_database "${MYSQL_HOST}" "${CINDER_DB_USERNAME}" "${CINDER_DB_PASSWORD}" "${CINDER_DB_NAME}"
 }
 
 ensure_cinder_service_catalog() {

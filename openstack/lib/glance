@@ -54,10 +54,7 @@ configure_glance() {
 }
 
 init_database() {
-    local MYSQL="mysql -h${MYSQL_HOST}"
-    ${MYSQL} -e "CREATE DATABASE IF NOT EXISTS ${GLANCE_DB_NAME}"
-    ${MYSQL} -e "GRANT ALL ON ${GLANCE_DB_NAME}.* TO '${GLANCE_DB_USERNAME}'@'${MYSQL_HOST}' IDENTIFIED BY '${GLANCE_DB_PASSWORD}'"
-    ${MYSQL} -e "FLUSH PRIVILEGES"
+    ensure_mysql_database "${MYSQL_HOST}" "${GLANCE_DB_USERNAME}" "${GLANCE_DB_PASSWORD}" "${GLANCE_DB_NAME}"
 }
 
 ensure_glance_service_catalog() {

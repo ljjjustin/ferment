@@ -105,10 +105,7 @@ configure_nova() {
 }
 
 init_database() {
-    local MYSQL="mysql -h${MYSQL_HOST}"
-    ${MYSQL} -e "CREATE DATABASE IF NOT EXISTS ${NOVA_DB_NAME}"
-    ${MYSQL} -e "GRANT ALL ON ${NOVA_DB_NAME}.* TO '${NOVA_DB_USERNAME}'@'${MYSQL_HOST}' IDENTIFIED BY '${NOVA_DB_PASSWORD}'"
-    ${MYSQL} -e "FLUSH PRIVILEGES"
+    ensure_mysql_database "${MYSQL_HOST}" "${NOVA_DB_USERNAME}" "${NOVA_DB_PASSWORD}" "${NOVA_DB_NAME}"
 }
 
 ensure_nova_service_catalog() {

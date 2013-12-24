@@ -228,4 +228,17 @@ ensure_keystone_service() {
     fi
 }
 
+ensure_mysql_database() {
+    local mysql_host=$1
+    local mysql_username=$2
+    local mysql_password=$3
+    local mysql_db_name=$4
+
+    ssh root@${mysql_host} /bin/bash <<EOF
+mysql -e "CREATE DATABASE IF NOT EXISTS ${mysql_db_name}"
+mysql -e "GRANT ALL ON ${mysql_db_name}.* TO '${mysql_username}'@'%' IDENTIFIED BY '${mysql_password}'"
+mysql -e "FLUSH PRIVILEGES"
+EOF
+}
+
 init_repository
