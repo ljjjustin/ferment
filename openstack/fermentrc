@@ -1,7 +1,10 @@
-SERVICE_HOST=172.16.1.50
 ## common services
+SERVICE_HOST=172.16.1.50
 MYSQL_HOST=172.16.1.51
 RABBIT_HOSTS=172.16.1.51:5672
+
+## host related config
+HOST_ADDRESS=172.16.1.51
 
 ## config nova services
 NOVA_SERVICES='api,metadata-api,conductor,scheduler,consoleauth,novncproxy,network,compute'

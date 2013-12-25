@@ -16,6 +16,8 @@ GLANCE_OS_TENANT_NAME=${GLANCE_OS_TENANT_NAME:-openstack}
 GLANCE_OS_USERNAME=${GLANCE_OS_USERNAME:-glance}
 GLANCE_OS_PASSWORD=${GLANCE_OS_PASSWORD:-admin}
 
+GLANCE_BIND_HOST=${GLANCE_BIND_HOST:-$HOST_ADDRESS}
+
 install_glance() {
     # install glance related packages
     echo "Installing glance ..."
@@ -27,6 +29,7 @@ configure_glance() {
     echo "Configuring glance ..."
     glance_reg_conf='/etc/glance/glance-registry.conf'
     if [ -f ${glance_reg_conf} ]; then
+        iniset ${glance_reg_conf} DEFAULT bind_host ${GLANCE_BIND_HOST}
         iniset ${glance_reg_conf} DEFAULT sql_connection mysql://${GLANCE_DB_USERNAME}:${GLANCE_DB_PASSWORD}@${MYSQL_HOST}/${GLANCE_DB_NAME}
         iniset ${glance_reg_conf} paste_deploy flavor keystone
         iniset ${glance_reg_conf} keystone_authtoken auth_protocol http
@@ -39,6 +42,8 @@ configure_glance() {
     fi
     glance_api_conf='/etc/glance/glance-api.conf'
     if [ -f ${glance_api_conf} ]; then
+        iniset ${glance_api_conf} DEFAULT bind_host ${GLANCE_BIND_HOST}
+        iniset ${glance_api_conf} DEFAULT registry_host ${GLANCE_BIND_HOST}
         iniset ${glance_api_conf} DEFAULT sql_connection mysql://${GLANCE_DB_USERNAME}:${GLANCE_DB_PASSWORD}@${MYSQL_HOST}/${GLANCE_DB_NAME}
         iniset ${glance_api_conf} DEFAULT workers 4
         iniset ${glance_api_conf} DEFAULT notifier_strategy noop

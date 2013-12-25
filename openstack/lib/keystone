@@ -14,6 +14,8 @@ KEYSTONE_DB_NAME=${KEYSTONE_DB_NAME:-keystone}
 KEYSTONE_DB_USERNAME=${KEYSTONE_DB_USERNAME:-keystone}
 KEYSTONE_DB_PASSWORD=${KEYSTONE_DB_PASSWORD:-keystone}
 
+KEYSTONE_BIND_HOST=${KEYSTONE_BIND_HOST:-$HOST_ADDRESS}
+
 install_keystone() {
     # install keystone related packages
     echo "Installing keystone ..."
@@ -27,6 +29,7 @@ configure_keystone() {
     if [ -f ${keystone_conf} ]; then
         ## keystone admin token
         iniset ${keystone_conf} DEFAULT admin_token ${KEYSTONE_SERVICE_TOKEN}
+        iniset ${keystone_conf} DEFAULT bind_host ${KEYSTONE_BIND_HOST}
         ## sql connection
         iniset ${keystone_conf} sql connection mysql://${KEYSTONE_DB_USERNAME}:${KEYSTONE_DB_PASSWORD}@${MYSQL_HOST}/${KEYSTONE_DB_NAME}
         ## token format

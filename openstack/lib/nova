@@ -18,6 +18,8 @@ NOVA_OS_TENANT_NAME=${NOVA_OS_TENANT_NAME:-openstack}
 NOVA_OS_USERNAME=${NOVA_OS_USERNAME:-nova}
 NOVA_OS_PASSWORD=${NOVA_OS_PASSWORD:-admin}
 
+NOVA_BIND_HOST=${NOVA_BIND_HOST:-$HOST_ADDRESS}
+
 NETWORK_MANAGER=${NETWORK_MANAGER:-nova.network.manager.FlatDHCPManager}
 FLAT_INTERFACE=${FLAT_INTERFACE:-eth0}
 PUBLIC_INTERFACE=${PUBLIC_INTERFACE:-eth0}
@@ -42,7 +44,11 @@ configure_nova() {
     # modify nova config file
     echo "Configuring nova ..."
     nova_conf='/etc/nova/nova.conf'
-    if [ -f ${nova_reg_conf} ]; then
+    if [ -f ${nova_conf} ]; then
+        iniset ${nova_conf} DEFAULT ec2_listen ${NOVA_BIND_HOST}
+        iniset ${nova_conf} DEFAULT osapi_compute_listen ${NOVA_BIND_HOST}
+        iniset ${nova_conf} DEFAULT metadata_listen ${NOVA_BIND_HOST}
+        iniset ${nova_conf} DEFAULT novncproxy_host ${NOVA_BIND_HOST}
         # database
         iniset ${nova_conf} DEFAULT sql_connection mysql://${NOVA_DB_USERNAME}:${NOVA_DB_PASSWORD}@${MYSQL_HOST}/${NOVA_DB_NAME}
         # rpc
@@ -141,8 +147,8 @@ init_nova() {
         chkconfig libvirtd on
     fi
     for service in ${services[@]}; do
-        chkconfig "${service}" on
-    fi
+        chkconfig "openstack-nova-${service}" on
+    done
 
     if is_service_enabled api; then
         init_database

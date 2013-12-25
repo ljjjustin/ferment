@@ -16,6 +16,8 @@ CINDER_OS_TENANT_NAME=${CINDER_OS_TENANT_NAME:-openstack}
 CINDER_OS_USERNAME=${CINDER_OS_USERNAME:-cinder}
 CINDER_OS_PASSWORD=${CINDER_OS_PASSWORD:-admin}
 
+CINDER_BIND_HOST=${CINDER_BIND_HOST:-$HOST_ADDRESS}
+
 install_cinder() {
     echo "Installing cinder ..."
     # install cinder related packages
@@ -27,6 +29,7 @@ configure_cinder() {
     # modify cinder config file
     cinder_conf='/etc/cinder/cinder.conf'
     if [ -f ${cinder_conf} ]; then
+        iniset ${cinder_conf} DEFAULT osapi_volume_listen ${CINDER_BIND_HOST}
         iniset ${cinder_conf} DEFAULT connection mysql://${CINDER_DB_USERNAME}:${CINDER_DB_PASSWORD}@${MYSQL_HOST}/${CINDER_DB_NAME}
         iniset ${cinder_conf} DEFAULT auth_strategy keystone
     fi
