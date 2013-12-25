@@ -56,11 +56,11 @@ configure_nova() {
         iniset ${nova_conf} DEFAULT rabbit_durable_queues false
         iniset ${nova_conf} DEFAULT rabbit_ha_queues true
         # glance url
-        iniset ${nova_conf} DEFAULT glance_api_servers "${GLANCE_HOST}:9292"
+        iniset ${nova_conf} DEFAULT glance_api_servers "${SERVICE_HOST}:9292"
         # keystone auth
         iniset ${nova_conf} DEFAULT auth_strategy keystone
         iniset ${nova_conf} keystone_authtoken auth_protocol http
-        iniset ${nova_conf} keystone_authtoken auth_host ${KEYSTONE_HOST}
+        iniset ${nova_conf} keystone_authtoken auth_host ${SERVICE_HOST}
         iniset ${nova_conf} keystone_authtoken auth_port 35357
         iniset ${nova_conf} keystone_authtoken admin_tenant_name ${NOVA_OS_TENANT_NAME}
         iniset ${nova_conf} keystone_authtoken admin_user ${NOVA_OS_USERNAME}
@@ -95,7 +95,7 @@ configure_nova() {
     nova_api_conf='/etc/nova/api-paste.ini'
     if [ -f ${nova_api_conf} ]; then
         iniset ${nova_api_conf} filter:authtoken auth_protocol http
-        iniset ${nova_api_conf} filter:authtoken auth_host ${KEYSTONE_HOST}
+        iniset ${nova_api_conf} filter:authtoken auth_host ${SERVICE_HOST}
         iniset ${nova_api_conf} filter:authtoken auth_port 35357
         iniset ${nova_api_conf} filter:authtoken admin_tenant_name ${NOVA_OS_TENANT_NAME}
         iniset ${nova_api_conf} filter:authtoken admin_user ${NOVA_OS_USERNAME}

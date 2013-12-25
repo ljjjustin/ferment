@@ -33,7 +33,7 @@ configure_cinder() {
     cinder_api_conf='/etc/cinder/api-paste.ini'
     if [ -f ${cinder_api_conf} ]; then
         iniset ${cinder_api_conf} filter:authtoken auth_protocol http
-        iniset ${cinder_api_conf} filter:authtoken auth_host ${KEYSTONE_HOST}
+        iniset ${cinder_api_conf} filter:authtoken auth_host ${SERVICE_HOST}
         iniset ${cinder_api_conf} filter:authtoken auth_port 35357
         iniset ${cinder_api_conf} filter:authtoken admin_tenant_name ${CINDER_OS_TENANT_NAME}
         iniset ${cinder_api_conf} filter:authtoken admin_user ${CINDER_OS_USERNAME}

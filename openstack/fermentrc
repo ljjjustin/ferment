@@ -1,9 +1,7 @@
+SERVICE_HOST=172.16.1.50
 ## common services
-MYSQL_HOST=localhost
-RABBIT_HOSTS=127.0.0.1:5672
-SERVICE_HOST=172.16.1.51
-KEYSTONE_HOST=localhost
-GLANCE_HOST=localhost
+MYSQL_HOST=172.16.1.51
+RABBIT_HOSTS=172.16.1.51:5672
 
 ## config nova services
 NOVA_SERVICES='api,metadata-api,conductor,scheduler,consoleauth,novncproxy,network,compute'

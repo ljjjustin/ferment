@@ -30,7 +30,7 @@ configure_glance() {
         iniset ${glance_reg_conf} DEFAULT sql_connection mysql://${GLANCE_DB_USERNAME}:${GLANCE_DB_PASSWORD}@${MYSQL_HOST}/${GLANCE_DB_NAME}
         iniset ${glance_reg_conf} paste_deploy flavor keystone
         iniset ${glance_reg_conf} keystone_authtoken auth_protocol http
-        iniset ${glance_reg_conf} keystone_authtoken auth_host ${KEYSTONE_HOST}
+        iniset ${glance_reg_conf} keystone_authtoken auth_host ${SERVICE_HOST}
         iniset ${glance_reg_conf} keystone_authtoken auth_port 35357
         iniset ${glance_reg_conf} keystone_authtoken admin_tenant_name ${GLANCE_OS_TENANT_NAME}
         iniset ${glance_reg_conf} keystone_authtoken admin_user ${GLANCE_OS_USERNAME}
@@ -44,7 +44,7 @@ configure_glance() {
         iniset ${glance_api_conf} DEFAULT notifier_strategy noop
         iniset ${glance_api_conf} paste_deploy flavor keystone
         iniset ${glance_api_conf} keystone_authtoken auth_protocol http
-        iniset ${glance_api_conf} keystone_authtoken auth_host ${KEYSTONE_HOST}
+        iniset ${glance_api_conf} keystone_authtoken auth_host ${SERVICE_HOST}
         iniset ${glance_api_conf} keystone_authtoken auth_port 35357
         iniset ${glance_api_conf} keystone_authtoken admin_tenant_name ${GLANCE_OS_TENANT_NAME}
         iniset ${glance_api_conf} keystone_authtoken admin_user ${GLANCE_OS_USERNAME}
