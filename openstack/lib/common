@@ -1,8 +1,8 @@
 # common - common functions
 #
 #
+REPOSERVER=${REPOSERVER:-'127.0.0.1'}
 reposdir=${reposdir:-/tmp/havana}
-reposerver=${reposerver:-'http://127.0.0.1'}
 
 yum_conf=${reposdir}/yum.conf
 repo_conf=${reposdir}/havana.repo
@@ -26,7 +26,7 @@ EOF
     cat > ${repo_conf} << EOF
 [base]
 name=OpenStack packages
-baseurl=${reposerver}/centos/\$releasever/\$basearch
+baseurl=http://${REPOSERVER}/centos/\$releasever/\$basearch
 enabled=1
 gpgcheck=0
 EOF
