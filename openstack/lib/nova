@@ -73,6 +73,11 @@ configure_nova() {
         iniset ${nova_conf} keystone_authtoken admin_password ${NOVA_OS_PASSWORD}
         iniset ${nova_conf} keystone_authtoken signing_dir /var/lib/nova/keystone-singing-nova
 
+        # memcached servers
+        if [[ ! -z "${MEMCACHED_SERVERS}" ]]; then
+            iniset ${nova_conf} DEFAULT memcached_servers ${MEMCACHED_SERVERS}
+        fi
+
         if is_service_enabled api metadata-api; then
             iniset ${nova_conf} DEFAULT enabled_apis ec2,osapi_compute
         fi
