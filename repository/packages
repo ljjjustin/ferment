@@ -1,3 +1,9 @@
+# common
+haproxy
+keepalived
+tcpdump
+rsync
+memcached
 mysql-server
 rabbitmq-server
 openstack-utils
@@ -9,7 +15,6 @@ openstack-glance
 # cinder
 openstack-cinder
 # nova
-rsync
 openstack-nova-api
 openstack-nova-conductor
 openstack-nova-scheduler
