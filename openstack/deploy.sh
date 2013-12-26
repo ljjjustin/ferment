@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ALL_COMMANDS=('install' 'config' 'start' 'stop' 'restart' 'remove' 'reinstall')
-ALL_SERVICES=('mysql' 'rabbitmq' 'keystone' 'glance' 'cinder' 'nova')
+ALL_SERVICES=('mysql' 'rabbitmq' 'keystone' 'glance' 'cinder' 'nova' 'horizon')
 
 usage() {
     echo "usage: $0 <command> <service>"

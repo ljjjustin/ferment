@@ -1,0 +1,79 @@
+# lib/horizon
+#
+# ``deploy.sh`` calls in this order:
+#
+# - install_horizon
+# - configure_horizon
+# - init_horizon
+# - start_horizon
+# - stop_horizon
+# - cleanup_horizon
+
+install_horizon() {
+    echo "Installing horizon ..."
+    # install horizon related packages
+    install_package openstack-dashboard
+}
+
+comment_python_string() {
+    local file=$1
+    local option=$2
+    sed -i -e "s/^\($option[ \t]*=.*$\)/#\1/" "$file"
+}
+
+has_python_string() {
+    local file=$1
+    local option=$2
+    local line=$(sed -ne '{ /^$option[ \t]*=/ p; }' "$file")
+    [ -n "$line" ]
+}
+
+set_python_string() {
+    local file=$1
+    local option=$2
+    local value=$3
+
+    if ! has_python_string "$file" "$option"; then
+        # Add it
+        echo -e "\n$option = '$value'" >> "$file"
+    else
+        # Replace it
+        sed -i -e "s/^\($option[ \t]*=\).*$/\1 '$value'/" "$file"
+    fi
+}
+
+configure_horizon() {
+    echo "Configuring horizon ..."
+    # modify horizon config file
+    local horizon_conf='/etc/openstack-dashboard/local_settings'
+    if [[ -f "$horizon_conf" ]]; then
+        comment_python_string ${horizon_conf} ALLOWED_HOSTS
+        comment_python_string ${horizon_conf} EMAIL_BACKEND
+        set_python_string ${horizon_conf} CONSOLE_TYPE "VNC"
+        set_python_string ${horizon_conf} OPENSTACK_HOST "${SERVICE_HOST}"
+        set_python_string ${horizon_conf} OPENSTACK_KEYSTONE_DEFAULT_ROLE "__member__"
+    fi
+}
+
+init_horizon() {
+    echo "Initializing horizon ..."
+    chkconfig httpd on
+}
+
+start_horizon() {
+    # start horizon services
+    echo "Starting horizon ..."
+    /etc/init.d/httpd start
+}
+
+stop_horizon() {
+    # stop horizon services
+    echo "Stopping horizon ..."
+    /etc/init.d/httpd stop
+}
+
+cleanup_horizon() {
+    # clean up horizon packages
+    echo "Cleaning up horizon ..."
+    remove_package openstack-dashboard
+}
