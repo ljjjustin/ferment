@@ -67,6 +67,8 @@ init_cinder() {
     # handle database related config
     init_database
     cinder-manage db sync
+    chown cinder:cinder /var/log/cinder
+    chown cinder:cinder /var/log/cinder/*
     ensure_cinder_service_catalog
 }
 

@@ -155,6 +155,9 @@ init_nova() {
         chkconfig "openstack-nova-${service}" on
     done
 
+    chown nova:nova /var/log/nova
+    chown nova:nova /var/log/nova/*
+
     if is_service_enabled api; then
         init_database
         nova-manage db sync

@@ -59,6 +59,8 @@ init_keystone() {
     # handle database related config
     init_database
     keystone-manage db_sync
+    chown keystone:keystone /var/log/keystone
+    chown keystone:keystone /var/log/keystone/*
     ensure_keystone_service_catalog
 }
 
