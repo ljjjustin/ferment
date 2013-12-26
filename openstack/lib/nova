@@ -21,10 +21,11 @@ NOVA_OS_PASSWORD=${NOVA_OS_PASSWORD:-admin}
 NOVA_BIND_HOST=${NOVA_BIND_HOST:-$HOST_ADDRESS}
 
 NETWORK_MANAGER=${NETWORK_MANAGER:-nova.network.manager.FlatDHCPManager}
-FLAT_INTERFACE=${FLAT_INTERFACE:-eth0}
 PUBLIC_INTERFACE=${PUBLIC_INTERFACE:-eth0}
-FLAT_NETWORK_BRIDGE=${FLAT_NETWORK_BRIDGE:-br100}
 VLAN_INTERFACE=${VLAN_INTERFACE:-eth0}
+VLAN_START=${VLAN_START:-100}
+FLAT_INTERFACE=${FLAT_INTERFACE:-eth0}
+FLAT_NETWORK_BRIDGE=${FLAT_NETWORK_BRIDGE:-br100}
 
 install_nova() {
     # install nova related packages
@@ -97,9 +98,10 @@ configure_nova() {
             iniset ${nova_conf} DEFAULT multi_host True
             iniset ${nova_conf} DEFAULT send_arp_for_ha True
             iniset ${nova_conf} DEFAULT network_manager ${NETWORK_MANAGER}
-            iniset ${nova_conf} DEFAULT vlan_interface ${VLAN_INTERFACE}
-            iniset ${nova_conf} DEFAULT flat_interface ${FLAT_INTERFACE}
             iniset ${nova_conf} DEFAULT public_interface ${PUBLIC_INTERFACE}
+            iniset ${nova_conf} DEFAULT vlan_interface ${VLAN_INTERFACE}
+            iniset ${nova_conf} DEFAULT vlan_start ${VLAN_START}
+            iniset ${nova_conf} DEFAULT flat_interface ${FLAT_INTERFACE}
             iniset ${nova_conf} DEFAULT flat_network_bridge ${FLAT_NETWORK_BRIDGE}
         fi
     fi
