@@ -15,3 +15,4 @@ NETWORK_MANAGER=nova.network.manager.VlanManager
 PUBLIC_INTERFACE=eth0
 VLAN_INTERFACE=eth1
 VLAN_START=100
+INSTANCES_PATH=/opt/nova/instances

@@ -79,6 +79,10 @@ configure_nova() {
             iniset ${nova_conf} DEFAULT memcached_servers ${MEMCACHED_SERVERS}
         fi
 
+        if [[ ! -z "${INSTANCES_PATH}" ]]; then
+            iniset ${nova_conf} DEFAULT instances_path ${INSTANCES_PATH}
+        fi
+
         if is_service_enabled api metadata-api; then
             iniset ${nova_conf} DEFAULT enabled_apis ec2,osapi_compute
         fi
@@ -159,6 +163,11 @@ init_nova() {
 
     chown nova:nova /var/log/nova
     chown nova:nova /var/log/nova/*
+
+    if [[ ! -z "${INSTANCES_PATH}" ]]; then
+        mkdir -p ${INSTANCES_PATH}
+        chown nova:nova ${INSTANCES_PATH}
+    fi
 
     if is_service_enabled api; then
         init_database
