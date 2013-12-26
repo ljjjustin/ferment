@@ -44,8 +44,8 @@ is_service_enabled() {
 configure_nova() {
     # modify nova config file
     echo "Configuring nova ..."
-    nova_conf='/etc/nova/nova.conf'
-    if [ -f ${nova_conf} ]; then
+    local nova_conf='/etc/nova/nova.conf'
+    if [[ -f "${nova_conf}" ]]; then
         iniset ${nova_conf} DEFAULT ec2_listen ${NOVA_BIND_HOST}
         iniset ${nova_conf} DEFAULT osapi_compute_listen ${NOVA_BIND_HOST}
         iniset ${nova_conf} DEFAULT metadata_listen ${NOVA_BIND_HOST}
@@ -109,8 +109,8 @@ configure_nova() {
             iniset ${nova_conf} DEFAULT flat_network_bridge ${FLAT_NETWORK_BRIDGE}
         fi
     fi
-    nova_api_conf='/etc/nova/api-paste.ini'
-    if [ -f ${nova_api_conf} ]; then
+    local nova_api_conf='/etc/nova/api-paste.ini'
+    if [[ -f "${nova_api_conf}" ]]; then
         iniset ${nova_api_conf} filter:authtoken auth_protocol http
         iniset ${nova_api_conf} filter:authtoken auth_host ${SERVICE_HOST}
         iniset ${nova_api_conf} filter:authtoken auth_port 35357

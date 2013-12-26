@@ -24,9 +24,9 @@ install_keystone() {
 
 configure_keystone() {
     echo "Configuring keystone ..."
-    keystone_conf='/etc/keystone/keystone.conf'
+    local keystone_conf='/etc/keystone/keystone.conf'
     # modify keystone config file
-    if [ -f ${keystone_conf} ]; then
+    if [[ -f "${keystone_conf}" ]]; then
         ## keystone admin token
         iniset ${keystone_conf} DEFAULT admin_token ${KEYSTONE_SERVICE_TOKEN}
         iniset ${keystone_conf} DEFAULT bind_host ${KEYSTONE_BIND_HOST}

@@ -27,8 +27,8 @@ install_glance() {
 configure_glance() {
     # modify glance config file
     echo "Configuring glance ..."
-    glance_reg_conf='/etc/glance/glance-registry.conf'
-    if [ -f ${glance_reg_conf} ]; then
+    local glance_reg_conf='/etc/glance/glance-registry.conf'
+    if [[ -f "${glance_reg_conf}" ]]; then
         iniset ${glance_reg_conf} DEFAULT bind_host ${GLANCE_BIND_HOST}
         iniset ${glance_reg_conf} DEFAULT sql_connection mysql://${GLANCE_DB_USERNAME}:${GLANCE_DB_PASSWORD}@${MYSQL_HOST}/${GLANCE_DB_NAME}
         iniset ${glance_reg_conf} paste_deploy flavor keystone
@@ -40,8 +40,8 @@ configure_glance() {
         iniset ${glance_reg_conf} keystone_authtoken admin_password ${GLANCE_OS_PASSWORD}
         iniset ${glance_reg_conf} keystone_authtoken signing_dir /var/lib/glance/keystone-singing-glance
     fi
-    glance_api_conf='/etc/glance/glance-api.conf'
-    if [ -f ${glance_api_conf} ]; then
+    local glance_api_conf='/etc/glance/glance-api.conf'
+    if [[ -f "${glance_api_conf}" ]]; then
         iniset ${glance_api_conf} DEFAULT bind_host ${GLANCE_BIND_HOST}
         iniset ${glance_api_conf} DEFAULT registry_host ${GLANCE_BIND_HOST}
         iniset ${glance_api_conf} DEFAULT sql_connection mysql://${GLANCE_DB_USERNAME}:${GLANCE_DB_PASSWORD}@${MYSQL_HOST}/${GLANCE_DB_NAME}
