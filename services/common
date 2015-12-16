@@ -2,10 +2,10 @@
 #
 #
 REPOSERVER=${REPOSERVER:-'127.0.0.1'}
-reposdir=${reposdir:-/tmp/havana}
+reposdir=${reposdir:-/tmp/liberty}
 
 yum_conf=${reposdir}/yum.conf
-repo_conf=${reposdir}/havana.repo
+repo_conf=${reposdir}/liberty.repo
 
 init_repository() {
     mkdir -p ${reposdir}
@@ -24,13 +24,18 @@ logfile=${reposdir}/yum.log
 EOF
 
     cat > ${repo_conf} << EOF
-[base]
+[openstack]
 name=OpenStack packages
 baseurl=http://${REPOSERVER}/centos/\$releasever/\$basearch
 enabled=1
 gpgcheck=0
 EOF
 }
+
+# execute only if no repo config file
+if [ ! -f "${repo_conf}" ]; then
+    init_repository
+fi
 
 install_package() {
     local YUM="yum -c ${yum_conf}"
@@ -240,5 +245,3 @@ mysql -e "GRANT ALL ON ${mysql_db_name}.* TO '${mysql_username}'@'%' IDENTIFIED 
 mysql -e "FLUSH PRIVILEGES"
 EOF
 }
-
-init_repository

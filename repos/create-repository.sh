@@ -26,28 +26,26 @@ EOF
 cat > ${repo_config_file} << 'EOF'
 [base]
 name=CentOS-$releasever - Base
-mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=os
+mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=os&infra=$infra
 #baseurl=http://mirror.centos.org/centos/$releasever/os/$basearch/
-enabled=1
 gpgcheck=0
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-6
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
 
 [epel]
-name=Extra Packages for Enterprise Linux 6 - $basearch
-#baseurl=http://download.fedoraproject.org/pub/epel/6/$basearch
-mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=epel-6&arch=$basearch
+name=Extra Packages for Enterprise Linux 7 - $basearch
+#baseurl=http://download.fedoraproject.org/pub/epel/7/$basearch
+mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=epel-7&arch=$basearch
 failovermethod=priority
 enabled=1
 gpgcheck=0
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
 
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-6
-[openstack-havana]
-name=OpenStack Havana Repository for EPEL 6
-baseurl=http://repos.fedorapeople.org/repos/openstack/openstack-havana/epel-6
+[openstack-liberty]
+name=OpenStack Liberty Repository
+baseurl=http://mirror.centos.org/centos/7/cloud/$basearch/openstack-liberty/
 enabled=1
-skip_if_unavailable=0
 gpgcheck=0
-priority=98
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-SIG-Cloud
 EOF
 
 YUM="yum -c ${yum_config_file}"
@@ -78,4 +76,4 @@ cat > /etc/httpd/conf.d/000-repo.conf <<EOF
     CustomLog logs/repository-access_log common
 </VirtualHost>
 EOF
-/etc/init.d/httpd restart
+systemctl restart httpd.service

@@ -4,7 +4,6 @@ keepalived
 tcpdump
 rsync
 memcached
-mysql-server
 rabbitmq-server
 openstack-utils
 openstack-common

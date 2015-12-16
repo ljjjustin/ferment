@@ -1,7 +1,26 @@
 #!/bin/bash
 
+# Sanitize language settings to avoid commands bailing out
+# with "unsupported locale setting" errors.
+unset LANG
+unset LANGUAGE
+LC_ALL=C
+export LC_ALL
+
+# Make sure umask is sane
+umask 022
+
+## source functions
+topdir=$(cd $(dirname $0) && pwd)
+
+if [ -f "${topdir}/fermentrc" ]; then
+    source ${topdir}/fermentrc
+fi
+source "${topdir}/ferment/common"
+
 ALL_COMMANDS=('install' 'config' 'start' 'stop' 'restart' 'remove' 'reinstall')
-ALL_SERVICES=('mysql' 'rabbitmq' 'keystone' 'glance' 'cinder' 'nova' 'horizon')
+ALL_SERVICES=($(ls -F "${topdir}/ferment" | grep '/$' | sed -e 's#/##g'))
+
 
 usage() {
     echo "usage: $0 <command> <service>"
@@ -41,20 +60,14 @@ service=$2
 is_valid_command ${command} || usage
 is_valid_service ${service} || usage
 
-## source functions
-topdir=$(cd $(dirname $0) && pwd)
-if [[ -f "${topdir}/fermentrc" ]]; then
-    source ${topdir}/fermentrc
-fi
-source ${topdir}/lib/common
-source ${topdir}/lib/${service}
-
 ## check necessary parameters
 if [[ -z "${SERVICE_HOST}" || -z "${HOST_ADDRESS}" ]]; then
     echo "environment variable 'SERVICE_HOST' and 'HOST_ADDRESS' can not be null"
     echo "set those two environment variable and run this scirpt again."
     exit
 fi
+
+source "${topdir}/ferment/${service}/*"
 
 ## execute functions
 if [[ "install" == "${command}" ]]; then
