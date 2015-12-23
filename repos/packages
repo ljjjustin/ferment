@@ -1,10 +1,21 @@
 # common
+htop
+tcpdump
+# HA
 haproxy
 keepalived
-tcpdump
+# mariadb
+MariaDB-Galera-server
+MariaDB-client
+galera
+socat
+xinetd
 rsync
+# memcache
 memcached
+# rabbitmq
 rabbitmq-server
+# openstack
 openstack-utils
 openstack-common
 # keystone
