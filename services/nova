@@ -1,0 +1,192 @@
+# lib/nova
+#
+# ``deploy.sh`` calls in this order:
+#
+# - install_nova
+# - configure_nova
+# - init_nova
+# - start_nova
+# - stop_nova
+# - cleanup_nova
+
+
+NOVA_DB_NAME=${NOVA_DB_NAME:-nova}
+NOVA_DB_USERNAME=${NOVA_DB_USERNAME:-nova}
+NOVA_DB_PASSWORD=${NOVA_DB_PASSWORD:-nova}
+NOVA_OS_TENANT_NAME=${NOVA_OS_TENANT_NAME:-openstack}
+NOVA_OS_USERNAME=${NOVA_OS_USERNAME:-nova}
+NOVA_OS_PASSWORD=${NOVA_OS_PASSWORD:-admin}
+NEUTRON_OS_TENANT_NAME=${NEUTRON_OS_TENANT_NAME:-openstack}
+NEUTRON_OS_USERNAME=${NEUTRON_OS_USERNAME:-nova}
+NEUTRON_OS_PASSWORD=${NEUTRON_OS_PASSWORD:-admin}
+
+
+install_nova() {
+    # install nova related packages
+    echo "Installing nova ..."
+    if is_controller_node; then
+        install_package openstack-nova-api \
+                        openstack-nova-conductor \
+                        openstack-nova-scheduler \
+                        openstack-nova-console \
+                        openstack-nova-novncproxy
+    fi
+    if is_compute_node; then
+        install_package openstack-nova-compute sysfsutils
+    fi
+}
+
+
+configure_nova() {
+    # modify nova config file
+    echo "Configuring nova ..."
+    local nova_conf='/etc/nova/nova.conf'
+    if [[ -f "${nova_conf}" ]]; then
+        # database
+        iniset ${nova_conf} database connection mysql://${NOVA_DB_USERNAME}:${NOVA_DB_PASSWORD}@${MYSQL_HOST}/${NOVA_DB_NAME}
+        # rpc
+        iniset ${nova_conf} DEFAULT rpc_backend rabbit
+        iniset ${nova_conf} oslo_messaging_rabbit rabbit_hosts "${RABBIT_HOSTS}"
+        iniset ${nova_conf} oslo_messaging_rabbit rabbit_userid "guest"
+        iniset ${nova_conf} oslo_messaging_rabbit rabbit_password "guest"
+        # keystone auth
+        iniset ${nova_conf} DEFAULT auth_strategy keystone
+        iniset ${nova_conf} keystone_authtoken project_domain_id default
+        iniset ${nova_conf} keystone_authtoken user_domain_id default
+        iniset ${nova_conf} keystone_authtoken auth_plugin password
+        iniset ${nova_conf} keystone_authtoken auth_uri http://${SERVICE_HOST}:5000
+        iniset ${nova_conf} keystone_authtoken auth_url http://${SERVICE_HOST}:35357
+        iniset ${nova_conf} keystone_authtoken project_name ${NOVA_OS_TENANT_NAME}
+        iniset ${nova_conf} keystone_authtoken username ${NOVA_OS_USERNAME}
+        iniset ${nova_conf} keystone_authtoken password ${NOVA_OS_PASSWORD}
+        # network
+        iniset ${nova_conf} DEFAULT network_api_class nova.network.neutronv2.api.API
+        iniset ${nova_conf} DEFAULT security_group_api neutron
+        iniset ${nova_conf} DEFAULT linuxnet_interface_driver nova.network.linux_net.NeutronLinuxBridgeInterfaceDrive
+        iniset ${nova_conf} DEFAULT firewall_driver nova.virt.firewall.NoopFirewallDriver
+        iniset ${nova_conf} neturon project_domain_id default
+        iniset ${nova_conf} neturon user_domain_id default
+        iniset ${nova_conf} neturon auth_plugin password
+        iniset ${nova_conf} neturon region_name RegionOne
+        iniset ${nova_conf} neturon auth_uri http://${SERVICE_HOST}:5000
+        iniset ${nova_conf} neturon auth_url http://${SERVICE_HOST}:35357
+        iniset ${nova_conf} neturon project_name ${NEUTRON_OS_TENANT_NAME}
+        iniset ${nova_conf} neturon username ${NEUTRON_OS_USERNAME}
+        iniset ${nova_conf} neturon password ${NEUTRON_OS_PASSWORD}
+        iniset ${nova_conf} neturon service_metadata_proxy True
+        iniset ${nova_conf} neturon metadata_proxy_shared_secret "METADATA_SECRET"
+        # vnc
+        iniset ${nova_conf} vnc vncserver_listen 0.0.0.0
+        iniset ${nova_conf} vnc vncserver_proxyclient_address "${HOST_ADDRESS}"
+        # glance url
+        iniset ${nova_conf} glance host "${SERVICE_HOST}"
+        # api
+        iniset ${nova_conf} DEFAULT enabled_apis "osapi_compute,metadata"
+        # oslo concurrentcy
+        iniset ${nova_conf} oslo_concurrency lock_path "/var/lib/nova/tmp"
+
+    fi
+    if [[ -f "${nova_conf}" && is_compute_node ]]; then
+        # libvirt
+        if egrep '(vmx|svm)' /proc/cpuinfo > /dev/null; then
+            iniset ${nova_conf} libvirt virt_type kvm
+        else
+            iniset ${nova_conf} libvirt virt_type qemu
+        fi
+        # vnc
+        iniset ${nova_conf} vnc enabled True
+        iniset ${nova_conf} vnc vncserver_listen 0.0.0.0
+        iniset ${nova_conf} vnc vncserver_proxyclient_address "${HOST_ADDRESS}"
+        iniset ${nova_conf} vnc novncproxy_base_url "http://${SERVICE_HOST}:6080/vnc_auto.html"
+    fi
+}
+
+init_database() {
+    ensure_mysql_database "${MYSQL_HOST}" "${NOVA_DB_USERNAME}" "${NOVA_DB_PASSWORD}" "${NOVA_DB_NAME}"
+}
+
+ensure_nova_service_catalog() {
+    local service_name='nova'
+    local service_type='compute'
+    local service_desc='Nova Compute Service'
+    local public_url="http://${SERVICE_HOST}:8774/v2/%(tenant_id)s"
+    local internal_url="http://${SERVICE_HOST}:8774/v2/%(tenant_id)s"
+    local admin_url="http://${SERVICE_HOST}:8774/v2/%(tenant_id)s"
+
+    ensure_keystone_service "${service_name}" "${service_type}" "${service_desc}" "${public_url}" "${internal_url}" "${admin_url}"
+
+    ensure_keystone_accounts "${NOVA_OS_TENANT_NAME}" "${NOVA_OS_USERNAME}" "${NOVA_OS_PASSWORD}" 'admin'
+}
+
+init_nova() {
+    # handle database related config
+    echo "Initializing nova ..."
+
+    chown nova:nova /var/log/nova
+    chown nova:nova /var/log/nova/*
+
+    if is_controller_node; then
+        enable_service openstack-nova-api
+        enable_service openstack-nova-conductor
+        enable_service openstack-nova-scheduler
+        enable_service openstack-nova-consoleauth
+        enable_service openstack-nova-novncproxy
+
+        init_database
+        nova-manage db sync
+        ensure_nova_service_catalog
+    fi
+    if is_compute_node; then
+        enable_service libvirtd
+        enable_service openstack-nova-compute
+    fi
+}
+
+start_nova() {
+    # start nova services
+    echo "Starting nova ..."
+
+    if is_controller_node; then
+        start_service openstack-nova-api
+        start_service openstack-nova-conductor
+        start_service openstack-nova-scheduler
+        start_service openstack-nova-consoleauth
+        start_service openstack-nova-novncproxy
+    fi
+    if is_compute_node; then
+        start_service libvirtd
+        start_service openstack-nova-compute
+    fi
+}
+
+stop_nova() {
+    # stop nova services
+    echo "Stopping nova ..."
+
+    if is_controller_node; then
+        stop_service openstack-nova-api
+        stop_service openstack-nova-conductor
+        stop_service openstack-nova-scheduler
+        stop_service openstack-nova-consoleauth
+        stop_service openstack-nova-novncproxy
+    fi
+    if is_compute_node; then
+        stop_service openstack-nova-compute
+        stop_service libvirtd
+    fi
+}
+
+cleanup_nova() {
+    # clean up nova packages
+    echo "Cleaning up nova ..."
+    if is_controller_node;  then
+        remove_package openstack-nova-api \
+                        openstack-nova-conductor \
+                        openstack-nova-scheduler \
+                        openstack-nova-console \
+                        openstack-nova-novncproxy
+    fi
+    if is_compute_node; then
+        remove_package openstack-nova-compute sysfsutils
+    fi
+}

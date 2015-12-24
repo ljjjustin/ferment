@@ -16,10 +16,10 @@ topdir=$(cd $(dirname $0) && pwd)
 if [ -f "${topdir}/fermentrc" ]; then
     source ${topdir}/fermentrc
 fi
-source "${topdir}/ferment/common"
+source "${topdir}/services/common"
 
 ALL_COMMANDS=('install' 'config' 'start' 'stop' 'restart' 'remove' 'reinstall')
-ALL_SERVICES=($(ls -F "${topdir}/ferment" | grep '/$' | sed -e 's#/##g'))
+ALL_SERVICES=($(ls -F "${topdir}/services"))
 
 
 usage() {
@@ -67,7 +67,7 @@ if [[ -z "${SERVICE_HOST}" || -z "${HOST_ADDRESS}" ]]; then
     exit
 fi
 
-source "${topdir}/ferment/${service}/*"
+source "${topdir}/services/${service}"
 
 ## execute functions
 if [[ "install" == "${command}" ]]; then

@@ -32,10 +32,24 @@ gpgcheck=0
 EOF
 }
 
-# execute only if no repo config file
-if [ ! -f "${repo_conf}" ]; then
-    init_repository
-fi
+# generate yum config file
+init_repository
+
+is_controller_node() {
+    if [[ ",${NODE_ROLES}," =~ ",controller," ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+is_compute_node() {
+    if [[ ",${NODE_ROLES}," =~ ",compute," ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
 
 install_package() {
     local YUM="yum -c ${yum_conf}"
@@ -45,6 +59,27 @@ install_package() {
 remove_package() {
     local YUM="yum -c ${yum_conf}"
     ${YUM} remove -y "$@"
+}
+
+# service management helpers
+enable_service() {
+    local CMD="systemctl enable"
+    ${CMD} "$@"
+}
+
+disable_service() {
+    local CMD="systemctl disable"
+    ${CMD} "$@"
+}
+
+start_service() {
+    local CMD="systemctl start"
+    ${CMD} "$@"
+}
+
+stop_service() {
+    local CMD="systemctl stop"
+    ${CMD} "$@"
 }
 
 # Comment an option in an INI file
@@ -127,94 +162,95 @@ get_id () {
     echo `"$@" | grep ' id ' | awk '{print $4}'`
 }
 
-get_keystone_tenant_id() {
-    local tenant_name=$1
-    keystone tenant-list | grep " ${tenant_name} " | get_field 1
+get_project_id() {
+    local project_name=$1
+    openstack project list | grep " ${project_name} " | get_field 1
 }
 
-get_keystone_user_id() {
+get_user_id() {
     local username=$1
-    keystone user-list | grep " ${username} " | get_field 1
+    openstack user list | grep " ${username} " | get_field 1
 }
 
-get_keystone_role_id() {
+get_role_id() {
     local role_name=$1
-    keystone role-list | grep " ${role_name} " | get_field 1
+    openstack role list | grep " ${role_name} " | get_field 1
 }
 
-get_keystone_service_id() {
+get_service_id() {
     local service_name=$1
-    keystone service-list | grep " ${service_name} " | get_field 1
+    openstack service list | grep " ${service_name} " | get_field 1
 }
 
-get_keystone_user_role() {
-    local tenant_name=$1
+get_user_role() {
+    local project_name=$1
     local username=$2
     local role_name=$3
-    keystone user-role-list --tenant "${tenant_name}" --user "${username}" | grep " ${role_name} " | get_field 1
+    openstack role list --project "${project_name}" --user "${username}" | grep " ${role_name} " | get_field 1
 }
 
-ensure_keystone_tenant() {
-    local tenant_name=$1
-    local tenant_id=$(get_keystone_tenant_id "${tenant_name}")
+ensure_keystone_project() {
+    local project_name=$1
+    local project_id=$(get_project_id "${project_name}")
 
-    if [[ -z "${tenant_id}" ]]; then
-        keystone tenant-create --name "${tenant_name}" --description "${tenant_name} tenant"
+    if [[ -z "${project_id}" ]]; then
+        openstack project create --domain default --description "${project_name}" "${project_name}"
     fi
 }
 
 ensure_keystone_user() {
     local username=$1
     local password=$2
-    local user_id=$(get_keystone_user_id "${username}")
+    local user_id=$(get_user_id "${username}")
 
     # create user if not exists
     if [[ -z "${user_id}" ]]; then
-        keystone user-create --name "${username}" --pass "${password}"
+        openstack user create --domain default --password "${password}" "${username}"
     fi
     # reset user password
-    keystone user-password-update --pass "${password}" "${username}"
+    #openstack user password set --password "${password}" "${username}"
 }
 
 ensure_keystone_role() {
     local role_name=$1
-    local role_id=$(get_keystone_role_id "${role_name}")
+    local role_id=$(get_role_id "${role_name}")
 
     if [[ -z "${role_id}" ]]; then
-        keystone role-create --name "${role_name}"
+        openstack role create "${role_name}"
     fi
 }
 
 ensure_keystone_user_role() {
-    local tenant_name=$1
+    local project_name=$1
     local username=$2
     local role_name=$3
-    local user_role=$(get_keystone_user_role "${tenant_name}" "${username}" "${role_name}")
+    local user_role=$(get_user_role "${project_name}" "${username}" "${role_name}")
 
     ensure_keystone_role "${role_name}"
 
     if [[ -z "${user_role}" ]]; then
-        keystone user-role-add --tenant "${tenant_name}" --user "${username}" --role "${role_name}"
+        openstack role add --project "${project_name}" --user "${username}" "${role_name}"
     fi
 }
 
 init_keystone_auth() {
     local keystone_conf='/etc/keystone/keystone.conf'
     export OS_CACHE=false
-    export OS_SERVICE_TOKEN=$(iniget "${keystone_conf}" DEFAULT admin_token)
-    export OS_SERVICE_ENDPOINT="http://${SERVICE_HOST}:35357/v2.0"
+    export OS_TOKEN=$(iniget "${keystone_conf}" DEFAULT admin_token)
+    export OS_URL="http://${SERVICE_HOST}:35357/v3"
+    export OS_IDENTITY_API_VERSION=3
 }
 
 ensure_keystone_accounts() {
-    local tenant_name=$1
+    local project_name=$1
     local username=$2
     local password=$3
     local role_name=$4
 
     init_keystone_auth
-    ensure_keystone_tenant "${tenant_name}"
+    ensure_keystone_project "${project_name}"
     ensure_keystone_user "${username}" "${password}"
-    ensure_keystone_user_role "${tenant_name}" "${username}" "${role_name}"
+    ensure_keystone_user_role "${project_name}" "${username}" "${role_name}"
 }
 
 ensure_keystone_service() {
@@ -222,14 +258,17 @@ ensure_keystone_service() {
     local service_type=$2
     local service_desc=$3
     local public_url=$4
-    local admin_url=$5
-    local internal_url=$6
+    local internal_url=$5
+    local admin_url=$6
 
     init_keystone_auth
-    service_id=$(get_keystone_service_id "${service_name}")
+    service_id=$(get_service_id "${service_name}")
     if [[ -z "${service_id}" ]]; then
-        service_id=$(get_id keystone service-create --name "${service_name}" --type "${service_type}" --description "${service_desc}")
-        keystone endpoint-create --region RegionOne --service-id "${service_id}" --publicurl "${public_url}" --adminurl "${admin_url}"  --internalurl "${internal_url}"
+        service_id=$(get_id openstack service create "${service_type}" \
+                --name "${service_name}" --description "${service_desc}")
+        openstack endpoint create --region RegionOne "${service_type}" public "${public_url}"
+        openstack endpoint create --region RegionOne "${service_type}" internal "${internal_url}"
+        openstack endpoint create --region RegionOne "${service_type}" admin "${admin_url}"
     fi
 }
 

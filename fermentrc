@@ -1,0 +1,14 @@
+## rpm repostory address
+REPOSERVER=10.251.1.68
+
+## common services
+SERVICE_HOST=192.168.34.100
+MYSQL_HOST=192.168.34.16
+RABBIT_HOSTS=192.168.34.14:5672,192.168.34.15:5672,192.168.34.16:5672
+MEMCACHED_SERVERS=192.168.34.51:11211,192.168.34.52:11211
+
+## host related config
+HOST_ADDRESS=$(ip -f inet addr show dev eth1 | grep inet | awk '{print $2}' | cut -d '/' -f1)
+
+## config node role (controller or compute)
+NODE_ROLES=${NODE_ROLES:-controller}

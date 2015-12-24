@@ -9,7 +9,7 @@
 # - stop_keystone
 # - cleanup_keystone
 
-KEYSTONE_SERVICE_TOKEN=${KEYSTONE_SERVICE_TOKEN:-ADMIN}
+KEYSTONE_SERVICE_TOKEN=${KEYSTONE_SERVICE_TOKEN:-ADMINTOKEN}
 KEYSTONE_DB_NAME=${KEYSTONE_DB_NAME:-keystone}
 KEYSTONE_DB_USERNAME=${KEYSTONE_DB_USERNAME:-keystone}
 KEYSTONE_DB_PASSWORD=${KEYSTONE_DB_PASSWORD:-keystone}
@@ -19,7 +19,7 @@ KEYSTONE_BIND_HOST=${KEYSTONE_BIND_HOST:-$HOST_ADDRESS}
 install_keystone() {
     # install keystone related packages
     echo "Installing keystone ..."
-    install_package openstack-keystone
+    install_package openstack-keystone python-openstackclient
 }
 
 configure_keystone() {
@@ -29,11 +29,12 @@ configure_keystone() {
     if [[ -f "${keystone_conf}" ]]; then
         ## keystone admin token
         iniset ${keystone_conf} DEFAULT admin_token ${KEYSTONE_SERVICE_TOKEN}
-        iniset ${keystone_conf} DEFAULT bind_host ${KEYSTONE_BIND_HOST}
+        iniset ${keystone_conf} DEFAULT public_bind_host ${KEYSTONE_BIND_HOST}
+        iniset ${keystone_conf} DEFAULT admin_bind_host ${KEYSTONE_BIND_HOST}
         ## sql connection
-        iniset ${keystone_conf} sql connection mysql://${KEYSTONE_DB_USERNAME}:${KEYSTONE_DB_PASSWORD}@${MYSQL_HOST}/${KEYSTONE_DB_NAME}
+        iniset ${keystone_conf} database connection mysql://${KEYSTONE_DB_USERNAME}:${KEYSTONE_DB_PASSWORD}@${MYSQL_HOST}/${KEYSTONE_DB_NAME}
         ## token format
-        iniset ${keystone_conf} signing token_format UUID
+        iniset ${keystone_conf} token driver sql
     fi
 }
 
@@ -44,18 +45,18 @@ init_database() {
 ensure_keystone_service_catalog() {
     local service_name='keystone'
     local service_type='identity'
-    local service_desc='Keystone Identity Service'
+    local service_desc='OpenStack Identity Service'
     local public_url="http://${SERVICE_HOST}:5000/v2.0"
-    local admin_url="http://${SERVICE_HOST}:35357/v2.0"
     local internal_url="http://${SERVICE_HOST}:5000/v2.0"
+    local admin_url="http://${SERVICE_HOST}:35357/v2.0"
 
     start_keystone && sleep 5
-    ensure_keystone_service "${service_name}" "${service_type}" "${service_desc}" "${public_url}" "${admin_url}" "${internal_url}"
+    ensure_keystone_service "${service_name}" "${service_type}" "${service_desc}" "${public_url}" "${internal_url}" "${admin_url}"
 }
 
 init_keystone() {
     echo "Initializing keystone ..."
-    chkconfig openstack-keystone on
+    enable_service openstack-keystone
     # handle database related config
     init_database
     keystone-manage db_sync
@@ -67,13 +68,13 @@ init_keystone() {
 start_keystone() {
     # start keystone services
     echo "Starting keystone ..."
-    /etc/init.d/openstack-keystone start
+    start_service openstack-keystone
 }
 
 stop_keystone() {
     # stop keystone services
     echo "Stopping keystone ..."
-    /etc/init.d/openstack-keystone stop
+    stop_service openstack-keystone
 }
 
 cleanup_keystone() {

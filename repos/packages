@@ -1,4 +1,6 @@
 # common
+yum-utils
+python-kitchen
 htop
 tcpdump
 # HA
@@ -18,12 +20,19 @@ rabbitmq-server
 # openstack
 openstack-utils
 openstack-common
+python-openstackclient
 # keystone
 openstack-keystone
 # glance
 openstack-glance
 # cinder
 openstack-cinder
+# neutron
+openstack-neutron
+openstack-neutron-ml2
+openstack-neutron-linuxbridge
+ebtables
+ipset
 # nova
 openstack-nova-api
 openstack-nova-conductor
@@ -32,5 +41,6 @@ openstack-nova-novncproxy
 openstack-nova-console
 openstack-nova-network
 openstack-nova-compute
+mailcap
 # horizon
 openstack-dashboard

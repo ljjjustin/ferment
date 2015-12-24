@@ -29,13 +29,13 @@ init_mysql() {
 start_mysql() {
     # start mysql services
     echo "Starting mysql ..."
-    /etc/init.d/mysqld start
+    service mysqld start
 }
 
 stop_mysql() {
     # stop mysql services
     echo "Stopping mysql ..."
-    /etc/init.d/mysqld stop
+    service mysqld stop
 }
 
 cleanup_mysql() {

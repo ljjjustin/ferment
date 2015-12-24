@@ -29,13 +29,13 @@ init_rabbitmq() {
 start_rabbitmq() {
     # start rabbitmq services
     echo "Starting rabbitmq ..."
-    /etc/init.d/rabbitmq-server start
+    service rabbitmq-server start
 }
 
 stop_rabbitmq() {
     # stop rabbitmq services
     echo "Stopping rabbitmq ..."
-    /etc/init.d/rabbitmq-server stop
+    service rabbitmq-server stop
 }
 
 cleanup_rabbitmq() {

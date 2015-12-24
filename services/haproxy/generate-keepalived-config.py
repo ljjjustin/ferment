@@ -19,10 +19,10 @@ vrrp_script chk_haproxy {
 
 KEEPALIVED_INSTANCE='''
 vrrp_instance openstack1 {
-	state %(role)s
+	virtual_router_id %(vrouter_id)s
 	interface %(dev)s
-	priority %(priority)s
-	virtual_router_id 51
+	state BACKUP
+	priority 100
 	advert_int 1
 
 	authentication {
@@ -44,9 +44,8 @@ vrrp_instance openstack1 {
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--role', metavar='server_role',
-                        choices=['MASTER', 'BACKUP'],
-                        required=True, help='Must be: MASTER or BACKUP')
+    parser.add_argument('--vrouter-id', metavar='virtual router id',
+                        default=51, help='Must between: 0~255')
     parser.add_argument('--vip', metavar='service_ip',
                         required=True, help='service ip')
     parser.add_argument('--sif', metavar='service_iface',
@@ -56,7 +55,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    role = args.role
+    vrouter_id = args.vrouter_id
     service_ip = args.vip
     service_iface = args.sif
     heartbeat_iface = args.hif
@@ -66,13 +65,8 @@ if __name__ == '__main__':
         conf = file(keepalived_conf, 'w')
         conf.write(KEEPALIVED_HEADER)
 
-        if role == 'MASTER':
-            priority = 102
-        else:
-            priority = 101
         params = {
-            'role': role,
-            'priority': priority,
+            'vrouter_id': vrouter_id,
             'vip': service_ip,
             'dev': service_iface,
         }

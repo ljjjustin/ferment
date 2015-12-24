@@ -1,0 +1,110 @@
+# lib/glance
+#
+# ``deploy.sh`` calls in this order:
+#
+# - install_glance
+# - configure_glance
+# - init_glance
+# - start_glance
+# - stop_glance
+# - cleanup_glance
+
+GLANCE_DB_NAME=${GLANCE_DB_NAME:-glance}
+GLANCE_DB_USERNAME=${GLANCE_DB_USERNAME:-glance}
+GLANCE_DB_PASSWORD=${GLANCE_DB_PASSWORD:-glance}
+GLANCE_OS_TENANT_NAME=${GLANCE_OS_TENANT_NAME:-openstack}
+GLANCE_OS_USERNAME=${GLANCE_OS_USERNAME:-glance}
+GLANCE_OS_PASSWORD=${GLANCE_OS_PASSWORD:-admin}
+
+GLANCE_BIND_HOST=${GLANCE_BIND_HOST:-$HOST_ADDRESS}
+
+install_glance() {
+    # install glance related packages
+    echo "Installing glance ..."
+    install_package openstack-glance
+}
+
+configure_glance() {
+    # modify glance config file
+    echo "Configuring glance ..."
+    local glance_reg_conf='/etc/glance/glance-registry.conf'
+    if [[ -f "${glance_reg_conf}" ]]; then
+        iniset ${glance_reg_conf} DEFAULT notification_driver noop
+        iniset ${glance_reg_conf} database connection mysql://${GLANCE_DB_USERNAME}:${GLANCE_DB_PASSWORD}@${MYSQL_HOST}/${GLANCE_DB_NAME}
+        iniset ${glance_reg_conf} keystone_authtoken project_domain_id default
+        iniset ${glance_reg_conf} keystone_authtoken user_domain_id default
+        iniset ${glance_reg_conf} keystone_authtoken auth_plugin password
+        iniset ${glance_reg_conf} keystone_authtoken auth_uri http://${SERVICE_HOST}:5000
+        iniset ${glance_reg_conf} keystone_authtoken auth_url http://${SERVICE_HOST}:35357
+        iniset ${glance_reg_conf} keystone_authtoken project_name ${GLANCE_OS_TENANT_NAME}
+        iniset ${glance_reg_conf} keystone_authtoken username ${GLANCE_OS_USERNAME}
+        iniset ${glance_reg_conf} keystone_authtoken password ${GLANCE_OS_PASSWORD}
+        iniset ${glance_reg_conf} paste_deploy flavor keystone
+    fi
+    local glance_api_conf='/etc/glance/glance-api.conf'
+    if [[ -f "${glance_api_conf}" ]]; then
+        iniset ${glance_api_conf} DEFAULT bind_host ${GLANCE_BIND_HOST}
+        iniset ${glance_api_conf} DEFAULT registry_host ${GLANCE_BIND_HOST}
+        iniset ${glance_api_conf} DEFAULT notification_driver noop
+        iniset ${glance_api_conf} database connection mysql://${GLANCE_DB_USERNAME}:${GLANCE_DB_PASSWORD}@${MYSQL_HOST}/${GLANCE_DB_NAME}
+        iniset ${glance_api_conf} keystone_authtoken project_domain_id default
+        iniset ${glance_api_conf} keystone_authtoken user_domain_id default
+        iniset ${glance_api_conf} keystone_authtoken auth_plugin password
+        iniset ${glance_api_conf} keystone_authtoken auth_uri http://${SERVICE_HOST}:5000
+        iniset ${glance_api_conf} keystone_authtoken auth_url http://${SERVICE_HOST}:35357
+        iniset ${glance_api_conf} keystone_authtoken project_name ${GLANCE_OS_TENANT_NAME}
+        iniset ${glance_api_conf} keystone_authtoken username ${GLANCE_OS_USERNAME}
+        iniset ${glance_api_conf} keystone_authtoken password ${GLANCE_OS_PASSWORD}
+        iniset ${glance_api_conf} paste_deploy flavor keystone
+        iniset ${glance_api_conf} glance_store default_store file
+        iniset ${glance_api_conf} glance_store filesystem_store_datadir "/var/lib/glance/images/"
+    fi
+}
+
+init_database() {
+    ensure_mysql_database "${MYSQL_HOST}" "${GLANCE_DB_USERNAME}" "${GLANCE_DB_PASSWORD}" "${GLANCE_DB_NAME}"
+}
+
+ensure_glance_service_catalog() {
+    local service_name='glance'
+    local service_type='image'
+    local service_desc='Glance Image Service'
+    local public_url="http://${SERVICE_HOST}:9292"
+    local internal_url="http://${SERVICE_HOST}:9292"
+    local admin_url="http://${SERVICE_HOST}:9292"
+
+    ensure_keystone_service "${service_name}" "${service_type}" "${service_desc}" "${public_url}" "${internal_url}" "${admin_url}"
+    ensure_keystone_accounts "${GLANCE_OS_TENANT_NAME}" "${GLANCE_OS_USERNAME}" "${GLANCE_OS_PASSWORD}" 'admin'
+}
+
+init_glance() {
+    echo "Initializing glance ..."
+    enable_service openstack-glance-registry
+    enable_service openstack-glance-api
+    # handle database related config
+    init_database
+    glance-manage db_sync
+    chown glance:glance /var/log/glance
+    chown glance:glance /var/log/glance/*
+    ensure_glance_service_catalog
+}
+
+start_glance() {
+    # start glance services
+    echo "Starting glance ..."
+    start_service openstack-glance-registry
+    start_service openstack-glance-api
+}
+
+stop_glance() {
+    # stop glance services
+    echo "Stopping glance ..."
+    start_service openstack-glance-api
+    start_service openstack-glance-registry
+}
+
+cleanup_glance() {
+    # clean up glance packages
+    echo "Cleaning up glance ..."
+    remove_package openstack-glance
+}

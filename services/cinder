@@ -75,13 +75,13 @@ init_cinder() {
 start_cinder() {
     # start cinder services
     echo "Starting cinder ..."
-    /etc/init.d/openstack-cinder-api start
+    service openstack-cinder-api start
 }
 
 stop_cinder() {
     # stop cinder services
     echo "Stopping cinder ..."
-    /etc/init.d/openstack-cinder-api stop
+    service openstack-cinder-api stop
 }
 
 cleanup_cinder() {

@@ -9,8 +9,10 @@ import shutil
 SERVICES = {
     "glance": [9191, 9292],
     "keystone": [5000, 35357],
-    "nova-api": [8773, 8774, 8775, 8776],
-    "novncproxy": [6080],
+    "nova-api": [8773, 8774, 8775],
+    "nova-novncproxy": [6080],
+    "cinder-api": [8776],
+    "neutron-server": [9696],
 }
 
 

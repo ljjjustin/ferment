@@ -57,19 +57,19 @@ configure_horizon() {
 
 init_horizon() {
     echo "Initializing horizon ..."
-    chkconfig httpd on
+    enable_service httpd
 }
 
 start_horizon() {
     # start horizon services
     echo "Starting horizon ..."
-    /etc/init.d/httpd start
+    start_service httpd
 }
 
 stop_horizon() {
     # stop horizon services
     echo "Stopping horizon ..."
-    /etc/init.d/httpd stop
+     stop_service httpd
 }
 
 cleanup_horizon() {
