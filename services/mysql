@@ -9,37 +9,105 @@
 # - stop_mysql
 # - cleanup_mysql
 
+
+GALERA_CLUSER_NAME=${GALERA_CLUSER_NAME:-galera_cluster}
+SST_USERNAME=${SST_USERNAME:-sstuser}
+SST_PASSWORD=${SST_PASSWORD:-sstpass}
+
+
 install_mysql() {
     # install mysql related packages
     echo "Installing mysql ..."
-    install_package mysql-server
+    install_package MariaDB-Galera-server MariaDB-client galera rsync
 }
 
 configure_mysql() {
     # modify mysql config file
     echo "Configuring mysql ..."
+
+    local first_node=$(echo ${GALERA_HOSTS} | cut -d, -f1)
+    if [ "${HOST_ADDRESS}" = "${first_node}" ]; then
+        service mysql start
+        sleep 5
+        sst_user=$(mysql -e "select * from mysql.user\G" | grep " User: ${STT_USERNAME}")
+        if [ "x" = "x${sst_user}" ]; then
+            mysql -e "GRANT USAGE ON *.* to ${SST_USERNAME}@'%' IDENTIFIED BY '${SST_PASSWORD}'"
+            mysql -e "GRANT ALL PRIVILEGES on *.* to ${SST_USERNAME}@'%'"
+            mysql -e "FLUSH PRIVILEGES"
+        fi
+        service mysql stop
+    else
+        # wait until galera have started
+        while true
+        do
+            if ! nmap -Pn ${first_node} -p4567 | awk "\$1 ~ /4567/ {print \$2}" | grep open >/dev/null; then
+                break
+            fi
+            sleep 3
+        done
+    fi
+
+    local server_conf='/etc/my.cnf.d/server.cnf'
+    if [ -f "$server_conf" ]; then
+        iniset ${server_conf} mariadb-10.0 default-storage-engine innodb
+        iniset ${server_conf} mariadb-10.0 binlog_format ROW
+        iniset ${server_conf} mariadb-10.0 innodb_autoinc_lock_mode 2
+        iniset ${server_conf} mariadb-10.0 innodb_locks_unsafe_for_binlog 1
+        iniset ${server_conf} mariadb-10.0 query_cache_size 0
+        iniset ${server_conf} mariadb-10.0 query_cache_type 0
+        iniset ${server_conf} mariadb-10.0 bind-address 0.0.0.0
+        iniset ${server_conf} mariadb-10.0 datadir /var/lib/mysql
+        iniset ${server_conf} mariadb-10.0 innodb_log_file_size 100M
+        iniset ${server_conf} mariadb-10.0 innodb_file_per_table
+        iniset ${server_conf} mariadb-10.0 innodb_flush_log_at_trx_commit 2
+        iniset ${server_conf} mariadb-10.0 wsrep_provider /usr/lib64/galera/libgalera_smm.so
+        iniset ${server_conf} mariadb-10.0 wsrep_cluster_address "'gcomm://${GALERA_HOSTS}'"
+        iniset ${server_conf} mariadb-10.0 wsrep_cluster_name "'${GALERA_CLUSER_NAME}'"
+        iniset ${server_conf} mariadb-10.0 wsrep_node_address "'${HOST_ADDRESS}'"
+        iniset ${server_conf} mariadb-10.0 wsrep_node_name "'$(hostname -s)'"
+        iniset ${server_conf} mariadb-10.0 wsrep_sst_method rsync
+        iniset ${server_conf} mariadb-10.0 wsrep_sst_auth "${SST_USERNAME}:${SST_PASSWORD}"
+    fi
 }
 
 init_mysql() {
     # handle database related config
     echo "Initializing mysql ..."
-    chkconfig mysqld on
+    chkconfig mysql on
+
+    local first_node=$(echo ${GALERA_HOSTS} | cut -d, -f1)
+    if [ "${HOST_ADDRESS}" = "${first_node}" ]; then
+        /etc/init.d/mysql start --wsrep-new-cluster
+        sleep 3
+        # show galera status
+        mysql -e "show status like 'wsrep%'" | grep -e wsrep_ready -e wsrep_connected -e wsrep_cluster_size -e wsrep_local_state_comment
+    fi
 }
 
 start_mysql() {
     # start mysql services
     echo "Starting mysql ..."
-    service mysqld start
+
+    local first_node=$(echo ${GALERA_HOSTS} | cut -d, -f1)
+    if [ "${HOST_ADDRESS}" = "${first_node}" ]; then
+        cluster_size=$(mysql -e "show status like 'wsrep%'" | grep -e wsrep_cluster_size | awk '{print $2}')
+        if [ "0$cluster_size" -gt 1 ]; then
+            killall mysqld
+            service mysql start
+        fi
+    else
+        service mysql start
+    fi
 }
 
 stop_mysql() {
     # stop mysql services
     echo "Stopping mysql ..."
-    service mysqld stop
+    service mysql stop
 }
 
 cleanup_mysql() {
     # clean up mysql packages
     echo "Cleaning up mysql ..."
-    remove_package mysql-server
+    remove_package MariaDB-Galera-server MariaDB-client
 }
