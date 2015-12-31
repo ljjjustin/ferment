@@ -80,27 +80,35 @@ configure_neutron() {
     fi
     local ml2_conf='/etc/neutron/plugins/ml2/ml2_conf.ini'
     if [[ -f "${ml2_conf}" && is_controller_node ]]; then
-        iniset ${ml2_conf} ml2 type_drivers "flat,vlan"
-        iniset ${ml2_conf} ml2 tenant_network_types ""
-        iniset ${ml2_conf} ml2 mechanism_drivers linuxbridge
+        iniset ${ml2_conf} ml2 type_drivers "flat,vlan,vxlan"
+        iniset ${ml2_conf} ml2 tenant_network_types "vxlan"
+        iniset ${ml2_conf} ml2 mechanism_drivers "linuxbridge,l2population"
         iniset ${ml2_conf} ml2 extension_drivers port_security
         iniset ${ml2_conf} ml2_type_flat flat_networks public
+        iniset ${ml2_conf} ml2_type_vxlan vni_ranges "1:1000"
         iniset ${ml2_conf} securitygroup enable_ipset True
         ln -sf ${ml2_conf} /etc/neutron/plugin.ini
     fi
     local l2_agent_conf='/etc/neutron/plugins/ml2/linuxbridge_agent.ini'
     if [[ -f "${l2_agent_conf}" ]]; then
-        iniset ${l2_agent_conf} linux_bridge physical_interface_mapping public:eth1
-        iniset ${l2_agent_conf} vxlan enable_vxlan False
+        iniset ${l2_agent_conf} linux_bridge physical_interface_mappings public:${PUBLIC_INTERFACE}
+        iniset ${l2_agent_conf} vxlan enable_vxlan True
+        iniset ${l2_agent_conf} vxlan l2_population True
+        iniset ${l2_agent_conf} vxlan local_ip ${HOST_ADDRESS}
         iniset ${l2_agent_conf} agent prevent_arp_spoofing True
         iniset ${l2_agent_conf} securitygroup enable_security_group True
         iniset ${l2_agent_conf} securitygroup firewall_driver neutron.agent.linux.iptables_firewall.IptablesFirewallDriver
     fi
     local dhcp_agent_conf='/etc/neutron/dhcp_agent.ini'
     if [[ -f "${dhcp_agent_conf}" && is_controller_node ]]; then
-        iniset ${dhcp_agent_conf} interface_driver neutron.agent.linux.interface.BridgeInterfaceDriver
-        iniset ${dhcp_agent_conf} dhcp_driver neutron.agent.linux.dhcp.Dnsmasq
-        iniset ${dhcp_agent_conf} enable_isolated_metadata True
+        iniset ${dhcp_agent_conf} DEFAULT interface_driver neutron.agent.linux.interface.BridgeInterfaceDriver
+        iniset ${dhcp_agent_conf} DEFAULT dhcp_driver neutron.agent.linux.dhcp.Dnsmasq
+        iniset ${dhcp_agent_conf} DEFAULT enable_isolated_metadata True
+    fi
+    local l3_agent_conf='/etc/neutron/l3_agent.ini'
+    if [[ -f "${l3_agent_conf}" && is_controller_node ]]; then
+        iniset ${l3_agent_conf} DEFAULT interface_driver neutron.agent.linux.interface.BridgeInterfaceDriver
+        iniset ${l3_agent_conf} DEFAULT external_network_bridge ""
     fi
     local matadata_agent_conf='/etc/neutron/metadata_agent.ini'
     if [[ -f "${metadata_agent_conf}" && is_controller_node ]]; then
@@ -164,6 +172,7 @@ start_neutron() {
         start_service neutron-server
         start_service neutron-linuxbridge-agent
         start_service neutron-dhcp-agent
+        start_service neutron-l3-agent
         start_service neutron-metadata-agent
     fi
     if is_compute_node; then
@@ -179,6 +188,7 @@ stop_neutron() {
         stop_service neutron-server
         stop_service neutron-linuxbridge-agent
         stop_service neutron-dhcp-agent
+        stop_service neutron-l3-agent
         stop_service neutron-metadata-agent
     fi
     if is_compute_node; then
