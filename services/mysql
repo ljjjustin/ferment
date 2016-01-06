@@ -58,7 +58,7 @@ configure_mysql() {
         iniset ${server_conf} mariadb-10.0 bind-address 0.0.0.0
         iniset ${server_conf} mariadb-10.0 datadir /var/lib/mysql
         iniset ${server_conf} mariadb-10.0 innodb_log_file_size 100M
-        iniset ${server_conf} mariadb-10.0 innodb_file_per_table
+        iniset ${server_conf} mariadb-10.0 innodb_file_per_table 1
         iniset ${server_conf} mariadb-10.0 innodb_flush_log_at_trx_commit 2
         iniset ${server_conf} mariadb-10.0 wsrep_provider /usr/lib64/galera/libgalera_smm.so
         iniset ${server_conf} mariadb-10.0 wsrep_cluster_address "'gcomm://${GALERA_HOSTS}'"
