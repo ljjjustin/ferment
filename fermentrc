@@ -2,18 +2,17 @@
 REPOSERVER=10.251.1.68
 
 ## common services
-SERVICE_HOST=192.168.34.100
-MYSQL_HOST=192.168.34.16
-GALERA_HOSTS=192.168.34.14,192.168.34.15,192.168.34.16
-RABBIT_HOSTS=192.168.34.14:5672,192.168.34.15:5672,192.168.34.16:5672
-MEMCACHED_SERVERS=192.168.34.51:11211,192.168.34.52:11211
+SERVICE_HOST=10.251.0.151
+MYSQL_HOST=10.251.0.151
+GALERA_HOSTS=10.251.0.238,10.251.0.235,10.251.0.237
+ERLANG_COOKIE=K7GNT304SIYPVP9CGPXDI268
+RABBIT_HOSTS=10.251.0.238:5672,10.251.0.235:5672,10.251.0.237
 
 ## config tenant network
 PUBLIC_INTERFACE=${PUBLIC_INTERFACE:-eth1}
 
 ## host related config
-HOST_ADDRESS=$(ip -f inet addr show dev eth1 | grep inet | awk '{print $2}' | cut -d '/' -f1)
+HOST_ADDRESS=$(ip -f inet addr show dev eth0 | grep inet | awk '{print $2}' | cut -d '/' -f1)
 
 ## config node role (controller or compute)
 NODE_ROLES=${NODE_ROLES:-controller}
-

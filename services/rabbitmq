@@ -18,24 +18,31 @@ install_rabbitmq() {
 configure_rabbitmq() {
     # modify rabbitmq config file
     echo "Configuring rabbitmq ..."
+    start_service rabbitmq-server
+    sleep 3
+    stop_service  rabbitmq-server
 }
 
 init_rabbitmq() {
     # handle database related config
     echo "Initializing rabbitmq ..."
-    chkconfig rabbitmq-server on
+    enable_service rabbitmq-server
+    echo -n "$ERLANG_COOKIE" > /var/lib/rabbitmq/.erlang.cookie
+    local first_node=$(echo ${RABBIT_HOSTS} | cut -d, -f1)
+    if [ "${HOST_ADDRESS}" = "${first_node}" ]; then
+    fi
 }
 
 start_rabbitmq() {
     # start rabbitmq services
     echo "Starting rabbitmq ..."
-    service rabbitmq-server start
+    start_service rabbitmq-server
 }
 
 stop_rabbitmq() {
     # stop rabbitmq services
     echo "Stopping rabbitmq ..."
-    service rabbitmq-server stop
+    stop_service rabbitmq-server
 }
 
 cleanup_rabbitmq() {

@@ -29,6 +29,7 @@ configure_glance() {
     echo "Configuring glance ..."
     local glance_reg_conf='/etc/glance/glance-registry.conf'
     if [[ -f "${glance_reg_conf}" ]]; then
+        echo -n > "$glance_reg_conf"
         iniset ${glance_reg_conf} DEFAULT notification_driver noop
         iniset ${glance_reg_conf} database connection mysql://${GLANCE_DB_USERNAME}:${GLANCE_DB_PASSWORD}@${MYSQL_HOST}/${GLANCE_DB_NAME}
         iniset ${glance_reg_conf} keystone_authtoken project_domain_id default
@@ -43,6 +44,7 @@ configure_glance() {
     fi
     local glance_api_conf='/etc/glance/glance-api.conf'
     if [[ -f "${glance_api_conf}" ]]; then
+        echo -n > "$glance_api_conf"
         iniset ${glance_api_conf} DEFAULT bind_host ${GLANCE_BIND_HOST}
         iniset ${glance_api_conf} DEFAULT registry_host ${GLANCE_BIND_HOST}
         iniset ${glance_api_conf} DEFAULT notification_driver noop

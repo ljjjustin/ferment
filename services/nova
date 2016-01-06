@@ -17,7 +17,7 @@ NOVA_OS_TENANT_NAME=${NOVA_OS_TENANT_NAME:-openstack}
 NOVA_OS_USERNAME=${NOVA_OS_USERNAME:-nova}
 NOVA_OS_PASSWORD=${NOVA_OS_PASSWORD:-admin}
 NEUTRON_OS_TENANT_NAME=${NEUTRON_OS_TENANT_NAME:-openstack}
-NEUTRON_OS_USERNAME=${NEUTRON_OS_USERNAME:-nova}
+NEUTRON_OS_USERNAME=${NEUTRON_OS_USERNAME:-neutron}
 NEUTRON_OS_PASSWORD=${NEUTRON_OS_PASSWORD:-admin}
 
 
@@ -42,6 +42,7 @@ configure_nova() {
     echo "Configuring nova ..."
     local nova_conf='/etc/nova/nova.conf'
     if [[ -f "${nova_conf}" ]]; then
+        echo -n > "$nova_conf"
         # database
         iniset ${nova_conf} database connection mysql://${NOVA_DB_USERNAME}:${NOVA_DB_PASSWORD}@${MYSQL_HOST}/${NOVA_DB_NAME}
         # rpc
@@ -51,11 +52,11 @@ configure_nova() {
         iniset ${nova_conf} oslo_messaging_rabbit rabbit_password "guest"
         # keystone auth
         iniset ${nova_conf} DEFAULT auth_strategy keystone
-        iniset ${nova_conf} keystone_authtoken project_domain_id default
-        iniset ${nova_conf} keystone_authtoken user_domain_id default
-        iniset ${nova_conf} keystone_authtoken auth_plugin password
         iniset ${nova_conf} keystone_authtoken auth_uri http://${SERVICE_HOST}:5000
         iniset ${nova_conf} keystone_authtoken auth_url http://${SERVICE_HOST}:35357
+        iniset ${nova_conf} keystone_authtoken auth_plugin password
+        iniset ${nova_conf} keystone_authtoken project_domain_id default
+        iniset ${nova_conf} keystone_authtoken user_domain_id default
         iniset ${nova_conf} keystone_authtoken project_name ${NOVA_OS_TENANT_NAME}
         iniset ${nova_conf} keystone_authtoken username ${NOVA_OS_USERNAME}
         iniset ${nova_conf} keystone_authtoken password ${NOVA_OS_PASSWORD}
@@ -64,27 +65,14 @@ configure_nova() {
         iniset ${nova_conf} DEFAULT security_group_api neutron
         iniset ${nova_conf} DEFAULT linuxnet_interface_driver nova.network.linux_net.NeutronLinuxBridgeInterfaceDrive
         iniset ${nova_conf} DEFAULT firewall_driver nova.virt.firewall.NoopFirewallDriver
-        iniset ${nova_conf} neturon project_domain_id default
-        iniset ${nova_conf} neturon user_domain_id default
-        iniset ${nova_conf} neturon auth_plugin password
-        iniset ${nova_conf} neturon region_name RegionOne
-        iniset ${nova_conf} neturon auth_uri http://${SERVICE_HOST}:5000
-        iniset ${nova_conf} neturon auth_url http://${SERVICE_HOST}:35357
-        iniset ${nova_conf} neturon project_name ${NEUTRON_OS_TENANT_NAME}
-        iniset ${nova_conf} neturon username ${NEUTRON_OS_USERNAME}
-        iniset ${nova_conf} neturon password ${NEUTRON_OS_PASSWORD}
-        iniset ${nova_conf} neturon service_metadata_proxy True
-        iniset ${nova_conf} neturon metadata_proxy_shared_secret "METADATA_SECRET"
-        # vnc
-        iniset ${nova_conf} vnc vncserver_listen 0.0.0.0
-        iniset ${nova_conf} vnc vncserver_proxyclient_address "${HOST_ADDRESS}"
-        # glance url
+        # glance
         iniset ${nova_conf} glance host "${SERVICE_HOST}"
-        # api
-        iniset ${nova_conf} DEFAULT enabled_apis "osapi_compute,metadata"
         # oslo concurrentcy
         iniset ${nova_conf} oslo_concurrency lock_path "/var/lib/nova/tmp"
-
+        # api
+        iniset ${nova_conf} DEFAULT enabled_apis "osapi_compute,metadata"
+        iniset ${nova_conf} neutron service_metadata_proxy True
+        iniset ${nova_conf} neutron metadata_proxy_shared_secret "METADATA_SECRET"
     fi
     if [[ -f "${nova_conf}" && is_compute_node ]]; then
         # libvirt
@@ -98,11 +86,22 @@ configure_nova() {
         iniset ${nova_conf} vnc vncserver_listen 0.0.0.0
         iniset ${nova_conf} vnc vncserver_proxyclient_address "${HOST_ADDRESS}"
         iniset ${nova_conf} vnc novncproxy_base_url "http://${SERVICE_HOST}:6080/vnc_auto.html"
+        # neutron api
+        iniset ${nova_conf} neutron url http://${SERVICE_HOST}:9696
+        iniset ${nova_conf} neutron auth_url http://${SERVICE_HOST}:35357
+        iniset ${nova_conf} neutron project_domain_id default
+        iniset ${nova_conf} neutron user_domain_id default
+        iniset ${nova_conf} neutron auth_plugin password
+        iniset ${nova_conf} neutron region_name RegionOne
+        iniset ${nova_conf} neutron project_name ${NEUTRON_OS_TENANT_NAME}
+        iniset ${nova_conf} neutron username ${NEUTRON_OS_USERNAME}
+        iniset ${nova_conf} neutron password ${NEUTRON_OS_PASSWORD}
     fi
 }
 
 init_database() {
     ensure_mysql_database "${MYSQL_HOST}" "${NOVA_DB_USERNAME}" "${NOVA_DB_PASSWORD}" "${NOVA_DB_NAME}"
+    nova-manage db sync
 }
 
 ensure_nova_service_catalog() {
@@ -133,7 +132,6 @@ init_nova() {
         enable_service openstack-nova-novncproxy
 
         init_database
-        nova-manage db sync
         ensure_nova_service_catalog
     fi
     if is_compute_node; then

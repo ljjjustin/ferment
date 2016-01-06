@@ -43,11 +43,12 @@ configure_neutron() {
     echo "Configuring neutron ..."
     local neutron_conf='/etc/neutron/neutron.conf'
     if [[ -f "${neutron_conf}" ]]; then
+        echo -n > "$neutron_conf"
         # database
         iniset ${neutron_conf} database connection mysql://${NEUTRON_DB_USERNAME}:${NEUTRON_DB_PASSWORD}@${MYSQL_HOST}/${NEUTRON_DB_NAME}
         # rpc
         iniset ${neutron_conf} DEFAULT core_plugin ml2
-        iniset ${neutron_conf} DEFAULT service_plugins ""
+        iniset ${neutron_conf} DEFAULT service_plugins router
         iniset ${neutron_conf} oslo_messaging_rabbit rabbit_hosts "${RABBIT_HOSTS}"
         iniset ${neutron_conf} oslo_messaging_rabbit rabbit_userid "guest"
         iniset ${neutron_conf} oslo_messaging_rabbit rabbit_password "guest"
@@ -80,6 +81,7 @@ configure_neutron() {
     fi
     local ml2_conf='/etc/neutron/plugins/ml2/ml2_conf.ini'
     if [[ -f "${ml2_conf}" && is_controller_node ]]; then
+        echo -n > "$ml2_conf"
         iniset ${ml2_conf} ml2 type_drivers "flat,vlan,vxlan"
         iniset ${ml2_conf} ml2 tenant_network_types "vxlan"
         iniset ${ml2_conf} ml2 mechanism_drivers "linuxbridge,l2population"
@@ -91,6 +93,7 @@ configure_neutron() {
     fi
     local l2_agent_conf='/etc/neutron/plugins/ml2/linuxbridge_agent.ini'
     if [[ -f "${l2_agent_conf}" ]]; then
+        echo -n > "$l2_agent_conf"
         iniset ${l2_agent_conf} linux_bridge physical_interface_mappings public:${PUBLIC_INTERFACE}
         iniset ${l2_agent_conf} vxlan enable_vxlan True
         iniset ${l2_agent_conf} vxlan l2_population True
@@ -101,17 +104,20 @@ configure_neutron() {
     fi
     local dhcp_agent_conf='/etc/neutron/dhcp_agent.ini'
     if [[ -f "${dhcp_agent_conf}" && is_controller_node ]]; then
+        echo -n > "$dhcp_agent_conf"
         iniset ${dhcp_agent_conf} DEFAULT interface_driver neutron.agent.linux.interface.BridgeInterfaceDriver
         iniset ${dhcp_agent_conf} DEFAULT dhcp_driver neutron.agent.linux.dhcp.Dnsmasq
         iniset ${dhcp_agent_conf} DEFAULT enable_isolated_metadata True
     fi
     local l3_agent_conf='/etc/neutron/l3_agent.ini'
     if [[ -f "${l3_agent_conf}" && is_controller_node ]]; then
+        echo -n > "$l3_agent_conf"
         iniset ${l3_agent_conf} DEFAULT interface_driver neutron.agent.linux.interface.BridgeInterfaceDriver
         iniset ${l3_agent_conf} DEFAULT external_network_bridge ""
     fi
-    local matadata_agent_conf='/etc/neutron/metadata_agent.ini'
+    local metadata_agent_conf='/etc/neutron/metadata_agent.ini'
     if [[ -f "${metadata_agent_conf}" && is_controller_node ]]; then
+        echo -n > "$metadata_agent_conf"
         iniset ${metadata_agent_conf} DEFAULT project_domain_id default
         iniset ${metadata_agent_conf} DEFAULT user_domain_id default
         iniset ${metadata_agent_conf} DEFAULT auth_plugin password
