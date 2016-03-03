@@ -27,7 +27,6 @@ configure_keystone() {
     local keystone_conf='/etc/keystone/keystone.conf'
     # modify keystone config file
     if [[ -f "${keystone_conf}" ]]; then
-        echo -n > "$keystone_conf"
         ## keystone admin token
         iniset ${keystone_conf} DEFAULT admin_token ${KEYSTONE_SERVICE_TOKEN}
         ## sql connection
