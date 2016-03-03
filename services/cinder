@@ -29,9 +29,16 @@ configure_cinder() {
     # modify cinder config file
     local cinder_conf='/etc/cinder/cinder.conf'
     if [[ -f "${cinder_conf}" ]]; then
-        iniset ${cinder_conf} DEFAULT osapi_volume_listen ${CINDER_BIND_HOST}
+        iniset ${cinder_conf} DEFAULT volule_driver cinder.volume.drivers.vmware.vmdk.VMwareVcVmdkDriver
+        iniset ${cinder_conf} DEFAULT volule_driver cinder.volume.drivers.vmware.vmdk.VMwareVcVmdkDriver
         iniset ${cinder_conf} DEFAULT sql_connection mysql://${CINDER_DB_USERNAME}:${CINDER_DB_PASSWORD}@${MYSQL_HOST}/${CINDER_DB_NAME}
         iniset ${cinder_conf} DEFAULT auth_strategy keystone
+        iniset ${cinder_conf} DEFAULT vmware_insecure True
+        iniset ${cinder_conf} DEFAULT vmware_host_ip "${VCENTER_HOST}"
+        iniset ${cinder_conf} DEFAULT vmware_host_username "${VCENTER_USERNAME}"
+        iniset ${cinder_conf} DEFAULT vmware_host_password "${VCENTER_PASSWORD}"
+        iniset ${cinder_conf} DEFAULT vmware_cluster_name "${VCENTER_CLUSTER_NAME}"
+        iniset ${cinder_conf} DEFAULT vmware_volume_folder "${VCENTER_VOLUME_FOLDER}"
     fi
     local cinder_api_conf='/etc/cinder/api-paste.ini'
     if [[ -f "${cinder_api_conf}" ]]; then
@@ -46,6 +53,7 @@ configure_cinder() {
 }
 
 init_database() {
+
     ensure_mysql_database "${MYSQL_HOST}" "${CINDER_DB_USERNAME}" "${CINDER_DB_PASSWORD}" "${CINDER_DB_NAME}"
 }
 

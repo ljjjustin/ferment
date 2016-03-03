@@ -26,14 +26,7 @@ install_neutron() {
     echo "Installing neutron ..."
     if is_controller_node; then
         install_package openstack-neutron \
-                        openstack-neutron-ml2 \
-                        openstack-neutron-linuxbridge \
-                        ebtables ipset
-    fi
-    if is_compute_node; then
-        install_package openstack-neutron \
-                        openstack-neutron-linuxbridge \
-                        ebtables ipset
+                        python-neutron-vmware-nsx
     fi
 }
 
@@ -79,41 +72,23 @@ configure_neutron() {
         iniset ${neutron_conf} oslo_concurrency lock_path "/var/lib/neutron/tmp"
 
     fi
-    local ml2_conf='/etc/neutron/plugins/ml2/ml2_conf.ini'
-    if [[ -f "${ml2_conf}" && is_controller_node ]]; then
-        echo -n > "$ml2_conf"
-        iniset ${ml2_conf} ml2 type_drivers "flat,vlan,vxlan"
-        iniset ${ml2_conf} ml2 tenant_network_types "vxlan"
-        iniset ${ml2_conf} ml2 mechanism_drivers "linuxbridge,l2population"
-        iniset ${ml2_conf} ml2 extension_drivers port_security
-        iniset ${ml2_conf} ml2_type_flat flat_networks public
-        iniset ${ml2_conf} ml2_type_vxlan vni_ranges "1:1000"
-        iniset ${ml2_conf} securitygroup enable_ipset True
-        ln -sf ${ml2_conf} /etc/neutron/plugin.ini
-    fi
-    local l2_agent_conf='/etc/neutron/plugins/ml2/linuxbridge_agent.ini'
-    if [[ -f "${l2_agent_conf}" ]]; then
-        echo -n > "$l2_agent_conf"
-        iniset ${l2_agent_conf} linux_bridge physical_interface_mappings public:${PUBLIC_INTERFACE}
-        iniset ${l2_agent_conf} vxlan enable_vxlan True
-        iniset ${l2_agent_conf} vxlan l2_population True
-        iniset ${l2_agent_conf} vxlan local_ip ${HOST_ADDRESS}
-        iniset ${l2_agent_conf} agent prevent_arp_spoofing True
-        iniset ${l2_agent_conf} securitygroup enable_security_group True
-        iniset ${l2_agent_conf} securitygroup firewall_driver neutron.agent.linux.iptables_firewall.IptablesFirewallDriver
+    local nsx_conf='/etc/neutron/plugins/vmware/nsx.ini'
+    if [[ -f "${nsx_conf}" && is_controller_node ]]; then
+        echo -n > "$nsx_conf"
+        iniset ${nsx_conf} dvs insecure True
+        iniset ${nsx_conf} dvs host_ip ${VCENTER_HOST}
+        iniset ${nsx_conf} dvs host_username "${VCENTER_USERNAME}"
+        iniset ${nsx_conf} dvs host_password "${VCENTER_PASSWORD}"
+        iniset ${nsx_conf} dvs dvs_name "${VCENTER_DVS_NAME}"
     fi
     local dhcp_agent_conf='/etc/neutron/dhcp_agent.ini'
     if [[ -f "${dhcp_agent_conf}" && is_controller_node ]]; then
         echo -n > "$dhcp_agent_conf"
-        iniset ${dhcp_agent_conf} DEFAULT interface_driver neutron.agent.linux.interface.BridgeInterfaceDriver
-        iniset ${dhcp_agent_conf} DEFAULT dhcp_driver neutron.agent.linux.dhcp.Dnsmasq
+        iniset ${dhcp_agent_conf} DEFAULT ovs_use_veth False
         iniset ${dhcp_agent_conf} DEFAULT enable_isolated_metadata True
-    fi
-    local l3_agent_conf='/etc/neutron/l3_agent.ini'
-    if [[ -f "${l3_agent_conf}" && is_controller_node ]]; then
-        echo -n > "$l3_agent_conf"
-        iniset ${l3_agent_conf} DEFAULT interface_driver neutron.agent.linux.interface.BridgeInterfaceDriver
-        iniset ${l3_agent_conf} DEFAULT external_network_bridge ""
+        iniset ${dhcp_agent_conf} DEFAULT dhcp_driver neutron.agent.linux.dhcp.Dnsmasq
+        iniset ${dhcp_agent_conf} DEFAULT interface_driver neutron.agent.linux.interface.OVSInterfaceDriver
+	iniset ${dhcp_agent_conf} DEFAULT ovs_integration_bridge br-int
     fi
     local metadata_agent_conf='/etc/neutron/metadata_agent.ini'
     if [[ -f "${metadata_agent_conf}" && is_controller_node ]]; then
@@ -133,7 +108,7 @@ configure_neutron() {
 
 init_database() {
     ensure_mysql_database "${MYSQL_HOST}" "${NEUTRON_DB_USERNAME}" "${NEUTRON_DB_PASSWORD}" "${NEUTRON_DB_NAME}"
-    neutron-db-manage --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini upgrade head
+    neutron-db-manage --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/vmware/nsx.ini upgrade head
 }
 
 ensure_neutron_service_catalog() {

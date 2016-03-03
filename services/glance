@@ -56,8 +56,15 @@ configure_glance() {
         iniset ${glance_api_conf} keystone_authtoken username ${GLANCE_OS_USERNAME}
         iniset ${glance_api_conf} keystone_authtoken password ${GLANCE_OS_PASSWORD}
         iniset ${glance_api_conf} paste_deploy flavor keystone
-        iniset ${glance_api_conf} glance_store default_store file
-        iniset ${glance_api_conf} glance_store filesystem_store_datadir "/var/lib/glance/images/"
+        iniset ${glance_api_conf} glance_store stores file,vmware
+        iniset ${glance_api_conf} glance_store default_store vsphere
+        iniset ${glance_api_conf} glance_store vmware_api_insecure true
+        iniset ${glance_api_conf} glance_store vmware_server_host ${VCENTER_HOST}
+        iniset ${glance_api_conf} glance_store vmware_server_username ${VCENTER_USERNAME}
+        iniset ${glance_api_conf} glance_store vmware_server_password ${VCENTER_PASSWORD}
+        iniset ${glance_api_conf} glance_store vmware_datacenter_path ${VCENTER_DATACENTER}
+        iniset ${glance_api_conf} glance_store vmware_datastore_name ${VCENTER_DATASTORE_NAME}
+        iniset ${glance_api_conf} glance_store vmware_data_image_dir ${VCENTER_DATASTORE_NAME}
     fi
 }
 

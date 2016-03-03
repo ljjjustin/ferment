@@ -16,3 +16,14 @@ HOST_ADDRESS=$(ip -f inet addr show dev eth0 | grep inet | awk '{print $2}' | cu
 
 ## config node role (controller or compute)
 NODE_ROLES=${NODE_ROLES:-controller}
+
+## VMware API config
+VCENTER_HOST=10.0.103.238
+VCENTER_USERNAME=Administrator@vsphere.local
+VCENTER_PASSWORD=P@ssw0rd
+VCENTER_DATACENTER=Datacenter
+VCENTER_DATASTORE_NAME=datastore236
+VCENTER_STORE_IMAGE_DIR=/openstack_glance
+VCENTER_CLUSTER_NAME=openstack
+VCENTER_DATASTORE_REGEX="datastore*"
+VCENTER_DVS_NAME=DVS1

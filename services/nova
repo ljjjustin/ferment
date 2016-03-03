@@ -60,13 +60,13 @@ configure_nova() {
         iniset ${nova_conf} keystone_authtoken project_name ${NOVA_OS_TENANT_NAME}
         iniset ${nova_conf} keystone_authtoken username ${NOVA_OS_USERNAME}
         iniset ${nova_conf} keystone_authtoken password ${NOVA_OS_PASSWORD}
-        # network
-        iniset ${nova_conf} DEFAULT network_api_class nova.network.neutronv2.api.API
-        iniset ${nova_conf} DEFAULT security_group_api neutron
-        iniset ${nova_conf} DEFAULT linuxnet_interface_driver nova.network.linux_net.NeutronLinuxBridgeInterfaceDrive
-        iniset ${nova_conf} DEFAULT firewall_driver nova.virt.firewall.NoopFirewallDriver
         # glance
         iniset ${nova_conf} glance host "${SERVICE_HOST}"
+        # networks
+        iniset ${nova_conf} DEFAULT security_group_api neutron
+        iniset ${nova_conf} DEFAULT network_api_class nova.network.neutronv2.api.API
+        iniset ${nova_conf} DEFAULT linuxnet_interface_driver nova.network.linux_net.NeutronLinuxBridgeInterfaceDrive
+        iniset ${nova_conf} DEFAULT firewall_driver nova.virt.firewall.NoopFirewallDriver
         # oslo concurrentcy
         iniset ${nova_conf} oslo_concurrency lock_path "/var/lib/nova/tmp"
         # api
@@ -75,12 +75,13 @@ configure_nova() {
         iniset ${nova_conf} neutron metadata_proxy_shared_secret "METADATA_SECRET"
     fi
     if [[ -f "${nova_conf}" && is_compute_node ]]; then
-        # libvirt
-        if egrep '(vmx|svm)' /proc/cpuinfo > /dev/null; then
-            iniset ${nova_conf} libvirt virt_type kvm
-        else
-            iniset ${nova_conf} libvirt virt_type qemu
-        fi
+        # vmware
+        iniset ${nova_conf} DEFAULT compute_driver vmwareapi.VMwareVCDriver
+        iniset ${nova_conf} vmware host_ip "${VCENTER_HOST}"
+        iniset ${nova_conf} vmware host_username "${VCENTER_USERNAME}"
+        iniset ${nova_conf} vmware host_password "${VCENTER_PASSWORD}"
+        iniset ${nova_conf} vmware cluster_name "${VCENTER_CLUSTER_NAME}"
+        iniset ${nova_conf} vmware datastore_regex "${VCENTER_DATASTORE_REGEX}"
         # vnc
         iniset ${nova_conf} vnc enabled True
         iniset ${nova_conf} vnc vncserver_listen 0.0.0.0
