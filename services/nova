@@ -136,7 +136,6 @@ init_nova() {
         ensure_nova_service_catalog
     fi
     if is_compute_node; then
-        enable_service libvirtd
         enable_service openstack-nova-compute
     fi
 }
@@ -153,7 +152,6 @@ start_nova() {
         start_service openstack-nova-novncproxy
     fi
     if is_compute_node; then
-        start_service libvirtd
         start_service openstack-nova-compute
     fi
 }
@@ -171,7 +169,6 @@ stop_nova() {
     fi
     if is_compute_node; then
         stop_service openstack-nova-compute
-        stop_service libvirtd
     fi
 }
 

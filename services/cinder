@@ -71,7 +71,8 @@ ensure_cinder_service_catalog() {
 
 init_cinder() {
     echo "Initializing cinder ..."
-    chkconfig openstack-cinder-api on
+    enable_service openstack-cinder-api
+
     # handle database related config
     init_database
     cinder-manage db sync
@@ -83,13 +84,17 @@ init_cinder() {
 start_cinder() {
     # start cinder services
     echo "Starting cinder ..."
-    service openstack-cinder-api start
+    start_service openstack-cinder-api
+    start_service openstack-cinder-scheduler
+    start_service openstack-cinder-volume
 }
 
 stop_cinder() {
     # stop cinder services
     echo "Stopping cinder ..."
-    service openstack-cinder-api stop
+    stop_service openstack-cinder-volume
+    stop_service openstack-cinder-scheduler
+    stop_service openstack-cinder-api
 }
 
 cleanup_cinder() {

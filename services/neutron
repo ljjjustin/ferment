@@ -24,10 +24,7 @@ NOVA_OS_PASSWORD=${NOVA_OS_PASSWORD:-admin}
 install_neutron() {
     # install neutron related packages
     echo "Installing neutron ..."
-    if is_controller_node; then
-        install_package openstack-neutron \
-                        python-networking-vmware-nsx
-    fi
+    install_package openstack-neutron python-networking-vmware-nsx
 }
 
 
@@ -40,8 +37,8 @@ configure_neutron() {
         # database
         iniset ${neutron_conf} database connection mysql://${NEUTRON_DB_USERNAME}:${NEUTRON_DB_PASSWORD}@${MYSQL_HOST}/${NEUTRON_DB_NAME}
         # rpc
-        iniset ${neutron_conf} DEFAULT core_plugin ml2
-        iniset ${neutron_conf} DEFAULT service_plugins router
+        iniset ${neutron_conf} DEFAULT core_plugin vmware_nsx.plugin.NsxDvsPlugin
+        iniset ${neutron_conf} DEFAULT service_plugins ""
         iniset ${neutron_conf} oslo_messaging_rabbit rabbit_hosts "${RABBIT_HOSTS}"
         iniset ${neutron_conf} oslo_messaging_rabbit rabbit_userid "guest"
         iniset ${neutron_conf} oslo_messaging_rabbit rabbit_password "guest"
@@ -84,11 +81,14 @@ configure_neutron() {
     local dhcp_agent_conf='/etc/neutron/dhcp_agent.ini'
     if [[ -f "${dhcp_agent_conf}" && is_controller_node ]]; then
         echo -n > "$dhcp_agent_conf"
-        iniset ${dhcp_agent_conf} DEFAULT ovs_use_veth False
-        iniset ${dhcp_agent_conf} DEFAULT enable_isolated_metadata True
-        iniset ${dhcp_agent_conf} DEFAULT dhcp_driver neutron.agent.linux.dhcp.Dnsmasq
+        iniset ${dhcp_agent_conf} DEFAULT resync_interval 30
         iniset ${dhcp_agent_conf} DEFAULT interface_driver neutron.agent.linux.interface.OVSInterfaceDriver
-	iniset ${dhcp_agent_conf} DEFAULT ovs_integration_bridge br-int
+        iniset ${dhcp_agent_conf} DEFAULT dhcp_driver neutron.agent.linux.dhcp.Dnsmasq
+        iniset ${dhcp_agent_conf} DEFAULT dhcp_domain openstacklocal
+	iniset ${dhcp_agent_conf} DEFAULT dhcp_broadcast_reply False
+	iniset ${dhcp_agent_conf} DEFAULT dhcp_delete_namespaces True
+        iniset ${dhcp_agent_conf} DEFAULT enable_isolated_metadata True
+        iniset ${dhcp_agent_conf} DEFAULT enable_metadata_network False
     fi
     local metadata_agent_conf='/etc/neutron/metadata_agent.ini'
     if [[ -f "${metadata_agent_conf}" && is_controller_node ]]; then
@@ -133,15 +133,11 @@ init_neutron() {
 
     if is_controller_node; then
         enable_service neutron-server
-        enable_service neutron-linuxbridge-agent
         enable_service neutron-dhcp-agent
         enable_service neutron-metadata-agent
 
         init_database
         ensure_neutron_service_catalog
-    fi
-    if is_compute_node; then
-        enable_service neutron-linuxbridge-agent
     fi
 }
 
@@ -151,13 +147,8 @@ start_neutron() {
 
     if is_controller_node; then
         start_service neutron-server
-        start_service neutron-linuxbridge-agent
         start_service neutron-dhcp-agent
-        start_service neutron-l3-agent
         start_service neutron-metadata-agent
-    fi
-    if is_compute_node; then
-        start_service neutron-linuxbridge-agent
     fi
 }
 
@@ -167,28 +158,13 @@ stop_neutron() {
 
     if is_controller_node; then
         stop_service neutron-server
-        stop_service neutron-linuxbridge-agent
         stop_service neutron-dhcp-agent
-        stop_service neutron-l3-agent
         stop_service neutron-metadata-agent
-    fi
-    if is_compute_node; then
-        stop_service neutron-linuxbridge-agent
     fi
 }
 
 cleanup_neutron() {
     # clean up neutron packages
     echo "Cleaning up neutron ..."
-    if is_controller_node; then
-        remove_package openstack-neutron \
-                       openstack-neutron-ml2 \
-                       openstack-neutron-linuxbridge \
-                       ebtables ipset
-    fi
-    if is_compute_node; then
-        remove_package openstack-neutron \
-                       openstack-neutron-linuxbridge \
-                       ebtables ipset
-    fi
+    remove_package openstack-neutron python-networking-vmware-nsx
 }
