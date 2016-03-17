@@ -26,7 +26,7 @@ install_neutron() {
     echo "Installing neutron ..."
     if is_controller_node; then
         install_package openstack-neutron \
-                        python-neutron-vmware-nsx
+                        python-networking-vmware-nsx
     fi
 }
 

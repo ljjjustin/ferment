@@ -1,21 +1,21 @@
 ## rpm repostory address
-REPOSERVER=10.251.1.68
+REPOSERVER=127.0.0.1
 
 ## common services
-SERVICE_HOST=10.251.0.151
-MYSQL_HOST=10.251.0.151
-GALERA_HOSTS=10.251.0.238,10.251.0.235,10.251.0.237
+SERVICE_HOST=10.0.103.100
+MYSQL_HOST=10.0.103.100
+GALERA_HOSTS=10.0.103.100,10.0.103.101,10.0.103.102
 ERLANG_COOKIE=K7GNT304SIYPVP9CGPXDI268
-RABBIT_HOSTS=10.251.0.238:5672,10.251.0.235:5672,10.251.0.237
+RABBIT_HOSTS=10.0.103.100:5672,10.0.103.101:5672,10.0.103.102:5672
 
 ## config tenant network
-PUBLIC_INTERFACE=${PUBLIC_INTERFACE:-eth1}
+PUBLIC_INTERFACE=${PUBLIC_INTERFACE:-eno16780032}
 
 ## host related config
-HOST_ADDRESS=$(ip -f inet addr show dev eth0 | grep inet | awk '{print $2}' | cut -d '/' -f1)
+HOST_ADDRESS=$(ip -f inet addr show dev eno16780032 | grep inet | awk '{print $2}' | cut -d '/' -f1)
 
 ## config node role (controller or compute)
-NODE_ROLES=${NODE_ROLES:-controller}
+NODE_ROLES=${NODE_ROLES:-controller,compute}
 
 ## VMware API config
 VCENTER_HOST=10.0.103.238
