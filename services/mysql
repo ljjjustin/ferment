@@ -18,7 +18,7 @@ SST_PASSWORD=${SST_PASSWORD:-sstpass}
 install_mysql() {
     # install mysql related packages
     echo "Installing mysql ..."
-    install_package MariaDB-Galera-server MariaDB-client galera rsync
+    install_package MariaDB-server MariaDB-client galera rsync
 }
 
 configure_mysql() {
@@ -49,24 +49,24 @@ configure_mysql() {
 
     local server_conf='/etc/my.cnf.d/server.cnf'
     if [ -f "$server_conf" ]; then
-        iniset ${server_conf} mariadb-10.0 default-storage-engine innodb
-        iniset ${server_conf} mariadb-10.0 binlog_format ROW
-        iniset ${server_conf} mariadb-10.0 innodb_autoinc_lock_mode 2
-        iniset ${server_conf} mariadb-10.0 innodb_locks_unsafe_for_binlog 1
-        iniset ${server_conf} mariadb-10.0 query_cache_size 0
-        iniset ${server_conf} mariadb-10.0 query_cache_type 0
-        iniset ${server_conf} mariadb-10.0 bind-address 0.0.0.0
-        iniset ${server_conf} mariadb-10.0 datadir /var/lib/mysql
-        iniset ${server_conf} mariadb-10.0 innodb_log_file_size 100M
-        iniset ${server_conf} mariadb-10.0 innodb_file_per_table 1
-        iniset ${server_conf} mariadb-10.0 innodb_flush_log_at_trx_commit 2
-        iniset ${server_conf} mariadb-10.0 wsrep_provider /usr/lib64/galera/libgalera_smm.so
-        iniset ${server_conf} mariadb-10.0 wsrep_cluster_address "'gcomm://${GALERA_HOSTS}'"
-        iniset ${server_conf} mariadb-10.0 wsrep_cluster_name "'${GALERA_CLUSER_NAME}'"
-        iniset ${server_conf} mariadb-10.0 wsrep_node_address "'${HOST_ADDRESS}'"
-        iniset ${server_conf} mariadb-10.0 wsrep_node_name "'$(hostname -s)'"
-        iniset ${server_conf} mariadb-10.0 wsrep_sst_method rsync
-        iniset ${server_conf} mariadb-10.0 wsrep_sst_auth "${SST_USERNAME}:${SST_PASSWORD}"
+        iniset ${server_conf} mariadb-10.1 default-storage-engine innodb
+        iniset ${server_conf} mariadb-10.1 binlog_format ROW
+        iniset ${server_conf} mariadb-10.1 innodb_autoinc_lock_mode 2
+        iniset ${server_conf} mariadb-10.1 innodb_locks_unsafe_for_binlog 1
+        iniset ${server_conf} mariadb-10.1 query_cache_size 0
+        iniset ${server_conf} mariadb-10.1 query_cache_type 0
+        iniset ${server_conf} mariadb-10.1 bind-address 0.0.0.0
+        iniset ${server_conf} mariadb-10.1 datadir /var/lib/mysql
+        iniset ${server_conf} mariadb-10.1 innodb_log_file_size 100M
+        iniset ${server_conf} mariadb-10.1 innodb_file_per_table 1
+        iniset ${server_conf} mariadb-10.1 innodb_flush_log_at_trx_commit 2
+        iniset ${server_conf} mariadb-10.1 wsrep_provider /usr/lib64/galera/libgalera_smm.so
+        iniset ${server_conf} mariadb-10.1 wsrep_cluster_address "'gcomm://${GALERA_HOSTS}'"
+        iniset ${server_conf} mariadb-10.1 wsrep_cluster_name "'${GALERA_CLUSER_NAME}'"
+        iniset ${server_conf} mariadb-10.1 wsrep_node_address "'${HOST_ADDRESS}'"
+        iniset ${server_conf} mariadb-10.1 wsrep_node_name "'$(hostname -s)'"
+        iniset ${server_conf} mariadb-10.1 wsrep_sst_method rsync
+        iniset ${server_conf} mariadb-10.1 wsrep_sst_auth "${SST_USERNAME}:${SST_PASSWORD}"
     fi
 }
 
@@ -109,5 +109,5 @@ stop_mysql() {
 cleanup_mysql() {
     # clean up mysql packages
     echo "Cleaning up mysql ..."
-    remove_package MariaDB-Galera-server MariaDB-client
+    remove_package MariaDB-server MariaDB-client
 }

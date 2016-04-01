@@ -1,13 +1,15 @@
 # common
 yum-utils
 python-kitchen
+python-chardet
 htop
 tcpdump
+wget
 # HA
 haproxy
 keepalived
 # mariadb
-MariaDB-Galera-server
+MariaDB-server
 MariaDB-client
 galera
 socat
@@ -28,11 +30,12 @@ openstack-glance
 # cinder
 openstack-cinder
 # neutron
+ipset
+ebtables
+openvswitch
 openstack-neutron
 openstack-neutron-ml2
-openstack-neutron-linuxbridge
-ebtables
-ipset
+openstack-neutron-openvswitch
 # nova
 openstack-nova-api
 openstack-nova-conductor
