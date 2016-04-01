@@ -30,6 +30,7 @@ init_rabbitmq() {
     echo -n "$ERLANG_COOKIE" > /var/lib/rabbitmq/.erlang.cookie
     local first_node=$(echo ${RABBIT_HOSTS} | cut -d, -f1)
     if [ "${HOST_ADDRESS}" = "${first_node}" ]; then
+	:
     fi
 }
 
