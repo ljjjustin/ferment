@@ -29,19 +29,31 @@ configure_cinder() {
     # modify cinder config file
     local cinder_conf='/etc/cinder/cinder.conf'
     if [[ -f "${cinder_conf}" ]]; then
-        iniset ${cinder_conf} DEFAULT osapi_volume_listen ${CINDER_BIND_HOST}
-        iniset ${cinder_conf} DEFAULT sql_connection mysql://${CINDER_DB_USERNAME}:${CINDER_DB_PASSWORD}@${MYSQL_HOST}/${CINDER_DB_NAME}
+        # database
+        iniset ${cinder_conf} database connection mysql://${CINDER_DB_USERNAME}:${CINDER_DB_PASSWORD}@${MYSQL_HOST}/${CINDER_DB_NAME}
+        # rpc
+        iniset ${cinder_conf} DEFAULT rpc_backend rabbit
+        iniset ${cinder_conf} oslo_messaging_rabbit rabbit_hosts "${RABBIT_HOSTS}"
+        iniset ${cinder_conf} oslo_messaging_rabbit rabbit_userid "guest"
+        iniset ${cinder_conf} oslo_messaging_rabbit rabbit_password "guest"
+        # keystone auth
         iniset ${cinder_conf} DEFAULT auth_strategy keystone
+        iniset ${cinder_conf} keystone_authtoken auth_uri http://${SERVICE_HOST}:5000
+        iniset ${cinder_conf} keystone_authtoken auth_url http://${SERVICE_HOST}:35357
+        iniset ${cinder_conf} keystone_authtoken auth_plugin password
+        iniset ${cinder_conf} keystone_authtoken project_domain_id default
+        iniset ${cinder_conf} keystone_authtoken user_domain_id default
+        iniset ${cinder_conf} keystone_authtoken project_name ${CINDER_OS_TENANT_NAME}
+        iniset ${cinder_conf} keystone_authtoken username ${CINDER_OS_USERNAME}
+        iniset ${cinder_conf} keystone_authtoken password ${CINDER_OS_PASSWORD}
+        # oslo concurrentcy
+        iniset ${cinder_conf} oslo_concurrency lock_path "/var/lib/cinder/tmp"
+        # misc
+        iniset ${cinder_conf} DEFAULT my_ip "${HOST_ADDRESS}"
     fi
-    local cinder_api_conf='/etc/cinder/api-paste.ini'
-    if [[ -f "${cinder_api_conf}" ]]; then
-        iniset ${cinder_api_conf} filter:authtoken auth_protocol http
-        iniset ${cinder_api_conf} filter:authtoken auth_host ${SERVICE_HOST}
-        iniset ${cinder_api_conf} filter:authtoken auth_port 35357
-        iniset ${cinder_api_conf} filter:authtoken admin_tenant_name ${CINDER_OS_TENANT_NAME}
-        iniset ${cinder_api_conf} filter:authtoken admin_user ${CINDER_OS_USERNAME}
-        iniset ${cinder_api_conf} filter:authtoken admin_password ${CINDER_OS_PASSWORD}
-        iniset ${cinder_api_conf} filter:authtoken signing_dir /var/lib/cinder/keystone-singing-cinder
+    local nova_conf='/etc/nova/nova.conf'
+    if [[ -f "${nova_conf}" && is_compute_node ]]; then
+        iniset ${nova_conf} cinder os_region_name RegionOne
     fi
 }
 
@@ -50,20 +62,28 @@ init_database() {
 }
 
 ensure_cinder_service_catalog() {
-    local service_name='cinder'
-    local service_type='volume'
-    local service_desc='Cinder Volume Service'
-    local public_url="http://${SERVICE_HOST}:8776/v1/\$(tenant_id)s"
-    local admin_url="http://${SERVICE_HOST}:8776/v1/\$(tenant_id)s"
-    local internal_url="http://${SERVICE_HOST}:8776/v1/\$(tenant_id)s"
+    local service_desc='OpenStack Block Storage'
+    local service_name_v1='cinder'
+    local service_type_v1='volume'
+    local public_url_v1="http://${SERVICE_HOST}:8776/v1/\$(tenant_id)s"
+    local internal_url_v1="http://${SERVICE_HOST}:8776/v1/\$(tenant_id)s"
+    local admin_url_v1="http://${SERVICE_HOST}:8776/v1/\$(tenant_id)s"
+    local service_name_v2='cinderv2'
+    local service_type_v2='volumev2'
+    local public_url_v2="http://${SERVICE_HOST}:8776/v2/\$(tenant_id)s"
+    local internal_url_v2="http://${SERVICE_HOST}:8776/v2/\$(tenant_id)s"
+    local admin_url_v2="http://${SERVICE_HOST}:8776/v2/\$(tenant_id)s"
 
-    ensure_keystone_service "${service_name}" "${service_type}" "${service_desc}" "${public_url}" "${admin_url}" "${internal_url}"
+    ensure_keystone_service "${service_name_v1}" "${service_type_v1}" "${service_desc}" "${public_url_v1}" "${internal_url_v1}" "${admin_url_v1}"
+    ensure_keystone_service "${service_name_v2}" "${service_type_v2}" "${service_desc}" "${public_url_v2}" "${internal_url_v2}" "${admin_url_v2}"
+
     ensure_keystone_accounts "${CINDER_OS_TENANT_NAME}" "${CINDER_OS_USERNAME}" "${CINDER_OS_PASSWORD}" 'admin'
 }
 
 init_cinder() {
     echo "Initializing cinder ..."
-    chkconfig openstack-cinder-api on
+    enable_service openstack-cinder-api
+
     # handle database related config
     init_database
     cinder-manage db sync
@@ -75,13 +95,13 @@ init_cinder() {
 start_cinder() {
     # start cinder services
     echo "Starting cinder ..."
-    service openstack-cinder-api start
+    start_service openstack-cinder-api
 }
 
 stop_cinder() {
     # stop cinder services
     echo "Stopping cinder ..."
-    service openstack-cinder-api stop
+    stop_service openstack-cinder-api
 }
 
 cleanup_cinder() {
