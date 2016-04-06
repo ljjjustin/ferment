@@ -83,7 +83,6 @@ configure_neutron() {
     fi
     local ml2_conf='/etc/neutron/plugins/ml2/ml2_conf.ini'
     if [[ -f "${ml2_conf}" && is_controller_node ]]; then
-        echo -n > "$ml2_conf"
         iniset ${ml2_conf} ml2 type_drivers "flat,vlan,vxlan"
         iniset ${ml2_conf} ml2 mechanism_drivers "openvswitch,l2population"
         iniset ${ml2_conf} ml2 tenant_network_types "vlan,vxlan"
@@ -101,8 +100,8 @@ configure_neutron() {
     local l2_agent_conf='/etc/neutron/plugins/ml2/openvswitch_agent.ini'
     if [[ -f "${l2_agent_conf}" ]]; then
         # tunnel ip
-        iniset ${l2_agent_conf} local_ip ${NEUTRON_TUNNEL_IP}
-        iniset ${l2_agent_conf} bridge_mappings vlan:br-vlan
+        iniset ${l2_agent_conf} ovs local_ip ${NEUTRON_TUNNEL_IP}
+        iniset ${l2_agent_conf} ovs bridge_mappings vlan:br-vlan
         # agent
         iniset ${l2_agent_conf} agent tunnel_types vxlan
         iniset ${l2_agent_conf} agent l2_population True
@@ -163,6 +162,7 @@ init_neutron() {
     chown neutron:neutron /var/log/neutron
     chown neutron:neutron /var/log/neutron/*
 
+    enable_service openvswitch
     if is_controller_node; then
         enable_service neutron-server
         enable_service neutron-openvswitch-agent
@@ -182,6 +182,7 @@ start_neutron() {
     # start neutron services
     echo "Starting neutron ..."
 
+    start_service openvswitch
     if is_controller_node; then
         start_service neutron-server
         start_service neutron-openvswitch-agent
