@@ -280,6 +280,7 @@ ensure_mysql_database() {
 
     ssh root@${mysql_host} /bin/bash <<EOF
 mysql -e "CREATE DATABASE IF NOT EXISTS ${mysql_db_name}"
+mysql -e "GRANT ALL ON ${mysql_db_name}.* TO '${mysql_username}'@'localhost' IDENTIFIED BY '${mysql_password}'"
 mysql -e "GRANT ALL ON ${mysql_db_name}.* TO '${mysql_username}'@'%' IDENTIFIED BY '${mysql_password}'"
 mysql -e "FLUSH PRIVILEGES"
 EOF

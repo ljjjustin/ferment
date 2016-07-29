@@ -1,0 +1,140 @@
+# lib/ironic
+#
+# ``deploy.sh`` calls in this order:
+#
+# - install_ironic
+# - configure_ironic
+# - init_ironic
+# - start_ironic
+# - stop_ironic
+# - cleanup_ironic
+
+
+IRONIC_DB_NAME=${IRONIC_DB_NAME:-ironic}
+IRONIC_DB_USERNAME=${IRONIC_DB_USERNAME:-ironic}
+IRONIC_DB_PASSWORD=${IRONIC_DB_PASSWORD:-ironic}
+IRONIC_OS_TENANT_NAME=${IRONIC_OS_TENANT_NAME:-openstack}
+IRONIC_OS_USERNAME=${IRONIC_OS_USERNAME:-ironic}
+IRONIC_OS_PASSWORD=${IRONIC_OS_PASSWORD:-admin}
+NEUTRON_OS_TENANT_NAME=${NEUTRON_OS_TENANT_NAME:-openstack}
+NEUTRON_OS_USERNAME=${NEUTRON_OS_USERNAME:-neutron}
+NEUTRON_OS_PASSWORD=${NEUTRON_OS_PASSWORD:-admin}
+
+
+install_ironic() {
+    # install ironic related packages
+    echo "Installing ironic ..."
+    if is_controller_node; then
+        install_package python-ironicclient openstack-ironic-api
+    fi
+    if is_compute_node; then
+        install_package python-ironicclient openstack-ironic-conductor openstack-nova-compute
+    fi
+}
+
+
+configure_ironic() {
+    # modify ironic config file
+    echo "Configuring ironic ..."
+    local ironic_conf='/etc/ironic/ironic.conf'
+    if [[ -f "${ironic_conf}" ]]; then
+        echo -n > "$ironic_conf"
+        # api
+        iniset ${ironic_conf} DEFAULT enabled_drivers pxe_ipmitool
+        # database
+        iniset ${ironic_conf} database connection mysql://${IRONIC_DB_USERNAME}:${IRONIC_DB_PASSWORD}@${MYSQL_HOST}/${IRONIC_DB_NAME}
+        # rpc
+        iniset ${ironic_conf} DEFAULT rpc_backend rabbit
+        iniset ${ironic_conf} oslo_messaging_rabbit rabbit_hosts "${RABBIT_HOSTS}"
+        iniset ${ironic_conf} oslo_messaging_rabbit rabbit_userid "guest"
+        iniset ${ironic_conf} oslo_messaging_rabbit rabbit_password "guest"
+        # keystone auth
+        iniset ${ironic_conf} DEFAULT auth_strategy keystone
+        iniset ${ironic_conf} keystone_authtoken auth_uri http://${SERVICE_HOST}:5000
+        iniset ${ironic_conf} keystone_authtoken auth_url http://${SERVICE_HOST}:35357
+        iniset ${ironic_conf} keystone_authtoken auth_plugin password
+        iniset ${ironic_conf} keystone_authtoken project_domain_id default
+        iniset ${ironic_conf} keystone_authtoken user_domain_id default
+        iniset ${ironic_conf} keystone_authtoken project_name ${IRONIC_OS_TENANT_NAME}
+        iniset ${ironic_conf} keystone_authtoken username ${IRONIC_OS_USERNAME}
+        iniset ${ironic_conf} keystone_authtoken password ${IRONIC_OS_PASSWORD}
+        # conductor
+        iniset ${ironic_conf} conductor api_url "http://${SERVICE_HOST}:6385"
+        # glance
+        iniset ${ironic_conf} glance glance_host "${SERVICE_HOST}"
+        # neutron
+        iniset ${ironic_conf} neutron url "http://${SERVICE_HOST}:9696"
+    fi
+}
+
+init_database() {
+    ensure_mysql_database "${MYSQL_HOST}" "${IRONIC_DB_USERNAME}" "${IRONIC_DB_PASSWORD}" "${IRONIC_DB_NAME}"
+    ironic-dbsync --config-file /etc/ironic/ironic.conf create_schema
+}
+
+ensure_ironic_service_catalog() {
+    local service_name='ironic'
+    local service_type='baremetal'
+    local service_desc='Ironic Baremetal Service'
+    local public_url="http://${SERVICE_HOST}:6385"
+    local internal_url="http://${SERVICE_HOST}:6385"
+    local admin_url="http://${SERVICE_HOST}:6385"
+
+    ensure_keystone_service "${service_name}" "${service_type}" "${service_desc}" "${public_url}" "${internal_url}" "${admin_url}"
+
+    ensure_keystone_accounts "${IRONIC_OS_TENANT_NAME}" "${IRONIC_OS_USERNAME}" "${IRONIC_OS_PASSWORD}" 'admin'
+}
+
+init_ironic() {
+    # handle database related config
+    echo "Initializing ironic ..."
+
+    chown ironic:ironic /var/log/ironic
+    chown ironic:ironic /var/log/ironic/*
+
+    if is_controller_node; then
+        enable_service openstack-ironic-api
+        init_database
+        ensure_ironic_service_catalog
+    fi
+    if is_compute_node; then
+        enable_service libvirtd
+        enable_service openstack-nova-compute
+        enable_service openstack-ironic-conductor
+    fi
+}
+
+start_ironic() {
+    # start ironic services
+    echo "Starting ironic ..."
+
+    if is_controller_node; then
+        start_service openstack-ironic-api
+    fi
+    if is_compute_node; then
+        start_service openstack-ironic-conductor
+    fi
+}
+
+stop_ironic() {
+    # stop ironic services
+    echo "Stopping ironic ..."
+
+    if is_controller_node; then
+        stop_service openstack-ironic-api
+    fi
+    if is_compute_node; then
+        stop_service openstack-ironic-conductor
+    fi
+}
+
+cleanup_ironic() {
+    # clean up ironic packages
+    echo "Cleaning up ironic ..."
+    if is_controller_node;  then
+        remove_package openstack-ironic-api
+    fi
+    if is_compute_node; then
+        remove_package openstack-ironic-compute
+    fi
+}

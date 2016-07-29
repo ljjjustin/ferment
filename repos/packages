@@ -37,6 +37,7 @@ openstack-neutron
 openstack-neutron-ml2
 openstack-neutron-openvswitch
 # nova
+mailcap
 openstack-nova-api
 openstack-nova-conductor
 openstack-nova-scheduler
@@ -44,6 +45,9 @@ openstack-nova-novncproxy
 openstack-nova-console
 openstack-nova-network
 openstack-nova-compute
-mailcap
 # horizon
 openstack-dashboard
+# ironic
+python-ironicclient
+openstack-ironic-api
+openstack-ironic-conductor
