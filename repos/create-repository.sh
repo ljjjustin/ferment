@@ -14,43 +14,15 @@ umask 022
 topdir=$(cd $(dirname $0) && pwd)
 
 ## config openstack repo
-openstack_reposdir="/opt/openstack"
-yum_config_file="${openstack_reposdir}/yum.conf"
-repo_config_file="${openstack_reposdir}/openstack.repo"
-YUM="yum -c ${yum_config_file}"
-YUMDOWNLOADER="yumdownloader -c ${yum_config_file} -y --resolve"
-
-## create yum config
-generate_yum_config()
-{
-    cat > ${yum_config_file} << EOF
-[main]
-cachedir=/var/cache/yum/\$basearch/\$releasever
-keepcache=0
-debuglevel=2
-exactarch=1
-obsoletes=1
-plugins=0
-gpgcheck=0
-timeout=60
-installonly_limit=5
-reposdir=${openstack_reposdir}
-logfile=${openstack_reposdir}/yum.log
-EOF
-}
-
+yum_chroot_jail_dir="/opt/yum/chroot"
+packages_topdir="${yum_chroot_jail_dir}/openstack/rpms"
+packages_destdir="${packages_topdir}/centos/7/x86_64"
+extra_repo_config="${yum_chroot_jail_dir}/etc/yum.repos.d/extra.repo"
 
 ## create rpm repository config
 generate_repos_config()
 {
-    cat > ${repo_config_file} << 'EOF'
-[base]
-name=CentOS-$releasever - Base
-mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=os&infra=$infra
-#baseurl=http://mirror.centos.org/centos/$releasever/os/$basearch/
-gpgcheck=0
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
-
+    cat > ${extra_repo_config} << 'EOF'
 [epel]
 name=Extra Packages for Enterprise Linux 7 - $basearch
 #baseurl=http://download.fedoraproject.org/pub/epel/7/$basearch
@@ -61,8 +33,8 @@ gpgcheck=0
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
 
 [mariadb]
-name = MariaDB 10.0
-baseurl = http://yum.mariadb.org/10.0/centos7-amd64
+name = MariaDB 10.2.0
+baseurl = http://yum.mariadb.org/10.2.0/centos7-amd64
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=0
 
@@ -82,8 +54,8 @@ generate_apache_config()
 <VirtualHost *:80>
     ServerAdmin root@localhost
     ServerName  $(hostname)
-    DocumentRoot "${openstack_reposdir}"
-    <Directory  "${openstack_reposdir}">
+    DocumentRoot "${packages_topdir}"
+    <Directory  "${packages_topdir}">
         Options +Indexes
         Require all granted
     </Directory>
@@ -94,25 +66,28 @@ EOF
 }
 
 ## create repostory base dir
-if [ ! -d "${openstack_reposdir}" ]
+if [ ! -d "${packages_destdir}" ]
 then
-    mkdir -p ${openstack_reposdir}
+    mkdir -p ${packages_destdir}
 fi
-generate_yum_config
 generate_repos_config
 
 ## install utils
-if ! rpm -q httpd createrepo yum-utils > /dev/null
+if ! rpm -q httpd createrepo > /dev/null
 then
-    yum install -y httpd createrepo yum-utils
+    yum install -y httpd createrepo
 fi
 
 ## download all needed packages
-destdir="${openstack_reposdir}/centos/7/x86_64"
-packages=$(cat ${topdir}/packages | grep -v "^#")
-${YUM} clean all
-${YUMDOWNLOADER} --destdir ${destdir} ${packages}
-createrepo --update -o ${destdir} ${destdir}
+cp "${topdir}/packages" "${packages_topdir}/packages"
+cat > "${packages_topdir}/update.sh" << 'EOF'
+#!/bin/bash
+
+yumdownloader --resolv --destdir /openstack/rpms/centos/7/x86_64 $(cat /openstack/rpms/packages | grep -v '#')
+EOF
+chmod +x "${packages_topdir}/update.sh"
+chroot "${yum_chroot_jail_dir}" "/openstack/rpms/update.sh"
+createrepo --update -o ${packages_destdir} ${packages_destdir}
 
 # restart apache
 generate_apache_config
