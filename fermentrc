@@ -1,18 +1,19 @@
 ## rpm repostory address
-REPOSERVER=10.0.103.236
+REPOSERVER=10.0.105.80
 
 ## common services
-SERVICE_HOST=10.0.103.236
-MYSQL_HOST=10.0.103.236
-GALERA_HOSTS=10.0.103.236
+SERVICE_HOST=10.0.105.80
+MYSQL_HOST=10.0.105.80
+GALERA_HOSTS=10.0.105.80
 ERLANG_COOKIE=K7GNT304SIYPVP9CGPXDI268
-RABBIT_HOSTS=10.0.103.236:5672
+RABBIT_HOSTS=10.0.105.80:5672
 
 ## config tenant network
 PUBLIC_INTERFACE=${PUBLIC_INTERFACE:-eth1}
 
 ## host related config
-HOST_ADDRESS=$(ip -f inet addr show dev eth0 | grep inet | awk '{print $2}' | cut -d '/' -f1)
+#HOST_ADDRESS=$(ip -f inet addr show dev eth0 | grep inet | awk '{print $2}' | cut -d '/' -f1)
+HOST_ADDRESS=10.0.105.80
 
 ## config node role (controller or compute)
 NODE_ROLES=${NODE_ROLES:-controller,compute}

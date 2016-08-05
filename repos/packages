@@ -5,6 +5,7 @@ python-chardet
 htop
 tcpdump
 wget
+lrzsz
 # HA
 haproxy
 keepalived
