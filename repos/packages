@@ -52,3 +52,4 @@ openstack-dashboard
 python-ironicclient
 openstack-ironic-api
 openstack-ironic-conductor
+shellinabox
