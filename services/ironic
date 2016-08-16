@@ -51,13 +51,10 @@ configure_ironic() {
         # keystone auth
         iniset ${ironic_conf} DEFAULT auth_strategy keystone
         iniset ${ironic_conf} keystone_authtoken auth_uri http://${SERVICE_HOST}:5000
-        iniset ${ironic_conf} keystone_authtoken auth_url http://${SERVICE_HOST}:35357
-        iniset ${ironic_conf} keystone_authtoken auth_plugin password
-        iniset ${ironic_conf} keystone_authtoken project_domain_id default
-        iniset ${ironic_conf} keystone_authtoken user_domain_id default
-        iniset ${ironic_conf} keystone_authtoken project_name ${IRONIC_OS_TENANT_NAME}
-        iniset ${ironic_conf} keystone_authtoken username ${IRONIC_OS_USERNAME}
-        iniset ${ironic_conf} keystone_authtoken password ${IRONIC_OS_PASSWORD}
+        iniset ${ironic_conf} keystone_authtoken auth_version "v3.0"
+        iniset ${ironic_conf} keystone_authtoken admin_tenant_name ${IRONIC_OS_TENANT_NAME}
+        iniset ${ironic_conf} keystone_authtoken admin_user ${IRONIC_OS_USERNAME}
+        iniset ${ironic_conf} keystone_authtoken admin_password ${IRONIC_OS_PASSWORD}
         # conductor
         iniset ${ironic_conf} conductor api_url "http://${SERVICE_HOST}:6385"
         # glance
