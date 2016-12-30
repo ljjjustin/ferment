@@ -32,15 +32,9 @@ enabled=1
 gpgcheck=0
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
 
-[mariadb]
-name = MariaDB 10.2.0
-baseurl = http://yum.mariadb.org/10.2.0/centos7-amd64
-gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
-gpgcheck=0
-
-[openstack-liberty]
+[openstack-newton]
 name=OpenStack Liberty Repository
-baseurl=http://mirror.centos.org/centos/7/cloud/$basearch/openstack-liberty/
+baseurl=http://mirrors.163.com/centos/7/cloud/$basearch/openstack-newton/
 enabled=1
 gpgcheck=0
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-SIG-Cloud

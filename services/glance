@@ -63,6 +63,7 @@ configure_glance() {
 
 init_database() {
     ensure_mysql_database "${MYSQL_HOST}" "${GLANCE_DB_USERNAME}" "${GLANCE_DB_PASSWORD}" "${GLANCE_DB_NAME}"
+    su -s /bin/sh -c "glance-manage db_sync" glance
 }
 
 ensure_glance_service_catalog() {
@@ -83,9 +84,10 @@ init_glance() {
     enable_service openstack-glance-api
     # handle database related config
     init_database
-    glance-manage db_sync
+
     chown glance:glance /var/log/glance
     chown glance:glance /var/log/glance/*
+
     ensure_glance_service_catalog
 }
 

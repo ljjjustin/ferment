@@ -11,6 +11,7 @@
 
 
 NOVA_DB_NAME=${NOVA_DB_NAME:-nova}
+NOVA_API_DB_NAME=${NOVA_API_DB_NAME:-nova_api}
 NOVA_DB_USERNAME=${NOVA_DB_USERNAME:-nova}
 NOVA_DB_PASSWORD=${NOVA_DB_PASSWORD:-nova}
 NOVA_OS_TENANT_NAME=${NOVA_OS_TENANT_NAME:-openstack}
@@ -44,29 +45,26 @@ configure_nova() {
     if [[ -f "${nova_conf}" ]]; then
         echo -n > "$nova_conf"
         # database
+        iniset ${nova_conf} api_database connection mysql://${NOVA_DB_USERNAME}:${NOVA_DB_PASSWORD}@${MYSQL_HOST}/${NOVA_API_DB_NAME}
         iniset ${nova_conf} database connection mysql://${NOVA_DB_USERNAME}:${NOVA_DB_PASSWORD}@${MYSQL_HOST}/${NOVA_DB_NAME}
         # rpc
-        iniset ${nova_conf} DEFAULT rpc_backend rabbit
-        iniset ${nova_conf} oslo_messaging_rabbit rabbit_hosts "${RABBIT_HOSTS}"
-        iniset ${nova_conf} oslo_messaging_rabbit rabbit_userid "guest"
-        iniset ${nova_conf} oslo_messaging_rabbit rabbit_password "guest"
+        iniset ${nova_conf} DEFAULT transport_url "rabbit://guest:guest@${RABBIT_HOSTS}"
         # keystone auth
         iniset ${nova_conf} DEFAULT auth_strategy keystone
         iniset ${nova_conf} keystone_authtoken auth_uri http://${SERVICE_HOST}:5000
         iniset ${nova_conf} keystone_authtoken auth_url http://${SERVICE_HOST}:35357
-        iniset ${nova_conf} keystone_authtoken auth_plugin password
-        iniset ${nova_conf} keystone_authtoken project_domain_id default
-        iniset ${nova_conf} keystone_authtoken user_domain_id default
+        iniset ${nova_conf} keystone_authtoken auth_type password
+        iniset ${nova_conf} keystone_authtoken project_domain_name default
+        iniset ${nova_conf} keystone_authtoken user_domain_name default
+	iniset ${nova_conf} keystone_authtoken memcached_servers "${SERVICE_HOST}:11211"
         iniset ${nova_conf} keystone_authtoken project_name ${NOVA_OS_TENANT_NAME}
         iniset ${nova_conf} keystone_authtoken username ${NOVA_OS_USERNAME}
         iniset ${nova_conf} keystone_authtoken password ${NOVA_OS_PASSWORD}
         # network
-        iniset ${nova_conf} DEFAULT network_api_class nova.network.neutronv2.api.API
-        iniset ${nova_conf} DEFAULT security_group_api neutron
-        iniset ${nova_conf} DEFAULT linuxnet_interface_driver nova.network.linux_net.NeutronLinuxBridgeInterfaceDrive
+        iniset ${nova_conf} DEFAULT use_neutron True
         iniset ${nova_conf} DEFAULT firewall_driver nova.virt.firewall.NoopFirewallDriver
         # glance
-        iniset ${nova_conf} glance host "${SERVICE_HOST}"
+        iniset ${nova_conf} glance api_servers "http://${SERVICE_HOST}:9292"
         # oslo concurrentcy
         iniset ${nova_conf} oslo_concurrency lock_path "/var/lib/nova/tmp"
         # api
@@ -100,17 +98,19 @@ configure_nova() {
 }
 
 init_database() {
+    ensure_mysql_database "${MYSQL_HOST}" "${NOVA_DB_USERNAME}" "${NOVA_DB_PASSWORD}" "${NOVA_API_DB_NAME}"
     ensure_mysql_database "${MYSQL_HOST}" "${NOVA_DB_USERNAME}" "${NOVA_DB_PASSWORD}" "${NOVA_DB_NAME}"
-    nova-manage db sync
+    su -s /bin/sh -c "nova-manage api_db sync" nova
+    su -s /bin/sh -c "nova-manage db sync" nova
 }
 
 ensure_nova_service_catalog() {
     local service_name='nova'
     local service_type='compute'
     local service_desc='Nova Compute Service'
-    local public_url="http://${SERVICE_HOST}:8774/v2/%(tenant_id)s"
-    local internal_url="http://${SERVICE_HOST}:8774/v2/%(tenant_id)s"
-    local admin_url="http://${SERVICE_HOST}:8774/v2/%(tenant_id)s"
+    local public_url="http://${SERVICE_HOST}:8774/v2.1/%(tenant_id)s"
+    local internal_url="http://${SERVICE_HOST}:8774/v2.1/%(tenant_id)s"
+    local admin_url="http://${SERVICE_HOST}:8774/v2.1/%(tenant_id)s"
 
     ensure_keystone_service "${service_name}" "${service_type}" "${service_desc}" "${public_url}" "${internal_url}" "${admin_url}"
 

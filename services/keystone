@@ -19,7 +19,7 @@ KEYSTONE_BIND_HOST=${KEYSTONE_BIND_HOST:-$HOST_ADDRESS}
 install_keystone() {
     # install keystone related packages
     echo "Installing keystone ..."
-    install_package openstack-keystone python-openstackclient
+    install_package openstack-keystone python-openstackclient httpd mod_wsgi
 }
 
 configure_keystone() {
@@ -32,7 +32,7 @@ configure_keystone() {
         ## sql connection
         iniset ${keystone_conf} database connection mysql://${KEYSTONE_DB_USERNAME}:${KEYSTONE_DB_PASSWORD}@${MYSQL_HOST}/${KEYSTONE_DB_NAME}
         ## token format
-        iniset ${keystone_conf} token driver sql
+        iniset ${keystone_conf} token provider fernet
     fi
 }
 
@@ -57,7 +57,19 @@ init_keystone() {
     enable_service openstack-keystone
     # handle database related config
     init_database
-    keystone-manage db_sync
+    su -s /bin/sh -c "keystone-manage db_sync" keystone
+    keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone
+    keystone-manage credential_setup --keystone-user keystone --keystone-group keystone
+
+    keystone-manage bootstrap \
+	    --bootstrap-password ADMIN_PASS \
+	    --bootstrap-admin-url http://${SERVICE_HOST}:35357/v3/ \
+	    --bootstrap-internal-url http://${SERVICE_HOST}:35357/v3/ \
+	    --bootstrap-public-url http://${SERVICE_HOST}:5000/v3/ \
+	    --bootstrap-region-id RegionOne
+
+    ln -sf /usr/share/keystone/wsgi-keystone.conf /etc/httpd/conf.d/
+
     chown keystone:keystone /var/log/keystone
     chown keystone:keystone /var/log/keystone/*
     ensure_keystone_service_catalog
@@ -66,13 +78,13 @@ init_keystone() {
 start_keystone() {
     # start keystone services
     echo "Starting keystone ..."
-    start_service openstack-keystone
+    restart_service httpd
 }
 
 stop_keystone() {
     # stop keystone services
     echo "Stopping keystone ..."
-    stop_service openstack-keystone
+    stop_service httpd
 }
 
 cleanup_keystone() {

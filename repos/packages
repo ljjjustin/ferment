@@ -10,9 +10,8 @@ lrzsz
 haproxy
 keepalived
 # mariadb
-MariaDB-server
-MariaDB-client
-galera
+mariadb
+mariadb-server
 socat
 xinetd
 rsync
@@ -46,6 +45,7 @@ openstack-nova-novncproxy
 openstack-nova-console
 openstack-nova-network
 openstack-nova-compute
+openstack-nova-cells
 # horizon
 openstack-dashboard
 # ironic

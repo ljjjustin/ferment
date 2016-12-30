@@ -82,6 +82,11 @@ stop_service() {
     ${CMD} "$@"
 }
 
+restart_service() {
+    local CMD="systemctl restart"
+    ${CMD} "$@"
+}
+
 # Comment an option in an INI file
 # inicomment config-file section option
 inicomment() {
