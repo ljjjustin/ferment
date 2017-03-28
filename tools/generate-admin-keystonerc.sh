@@ -3,7 +3,7 @@
 curdir=$(cd $(dirname $0) && pwd)
 topdir=$(dirname ${curdir})
 
-source ${topdir}/fermentrc
+source ${topdir}/.fermentrc
 source ${topdir}/services/common
 
 ADMIN_TENANT_NAME=${ADMIN_TENANT_NAME:-admin}
@@ -23,3 +23,8 @@ export OS_VOLUME_API_VERSION=2
 EOF
 
 ensure_keystone_accounts "${ADMIN_TENANT_NAME}" "${ADMIN_USERNAME}" "${ADMIN_PASSWORD}" admin
+
+# test adminrc
+unset OS_TOKEN
+source ~/adminrc
+openstack token issue
