@@ -3,7 +3,7 @@
 curdir=$(cd $(dirname $0) && pwd)
 topdir=$(dirname ${curdir})
 
-source ${topdir}/fermentrc
+source ${topdir}/.fermentrc
 source ${topdir}/services/common
 
 ADMIN_TENANT_NAME=${ADMIN_TENANT_NAME:-admin}

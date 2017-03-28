@@ -178,7 +178,7 @@ ensure_keystone_user() {
         openstack user create --domain default --password "${password}" "${username}"
     fi
     # reset user password
-    #openstack user password set --password "${password}" "${username}"
+    openstack user set --password "${password}" "${username}"
 }
 
 ensure_keystone_role() {
