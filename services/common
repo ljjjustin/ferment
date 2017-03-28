@@ -221,6 +221,7 @@ ensure_keystone_accounts() {
     ensure_keystone_project "${project_name}"
     ensure_keystone_user "${username}" "${password}"
     ensure_keystone_user_role "${project_name}" "${username}" "${role_name}"
+    unset OS_TOKEN
 }
 
 ensure_keystone_service() {
@@ -240,6 +241,7 @@ ensure_keystone_service() {
         openstack endpoint create --region RegionOne "${service_type}" internal "${internal_url}"
         openstack endpoint create --region RegionOne "${service_type}" admin "${admin_url}"
     fi
+    unset OS_TOKEN
 }
 
 ensure_mysql_database() {
