@@ -13,6 +13,7 @@ umask 022
 ## source functions
 topdir=$(cd $(dirname $0) && pwd)
 
+USE_DIY_YUM_REPOS=false
 if [ -f "${topdir}/fermentrc" ]; then
     source ${topdir}/fermentrc
 fi
@@ -49,6 +50,11 @@ is_valid_service() {
     return 1
 }
 
+init_repository() {
+    local reposdir=$1
+
+}
+
 ## check parameters
 if [[ $# -ne 2 ]]; then
     usage
@@ -65,6 +71,45 @@ if [[ -z "${SERVICE_HOST}" || -z "${HOST_ADDRESS}" ]]; then
     echo "environment variable 'SERVICE_HOST' and 'HOST_ADDRESS' can not be null"
     echo "set those two environment variable and run this scirpt again."
     exit
+fi
+if [ -z "$REPOSERVER" -a "$USE_DIY_YUM_REPOS" = true ]; then
+    echo "you must set 'REPOSERVER' if you want to use your own repository"
+    exit
+fi
+
+## init yum repository
+if [ "$USE_DIY_YUM_REPOS" = true ]; then
+    reposdir=${reposdir:-/tmp/ferment}
+    yum_conf=${reposdir}/yum.conf
+    repo_conf=${reposdir}/openstack.repo
+
+    # generate yum config file
+    mkdir -p ${reposdir}
+    cat > ${yum_conf} << EOF
+[main]
+keepcache=0
+debuglevel=2
+exactarch=1
+obsoletes=1
+plugins=0
+gpgcheck=0
+installonly_limit=5
+reposdir=${reposdir}
+cachedir=${reposdir}
+logfile=${reposdir}/yum.log
+EOF
+
+    cat > ${repo_conf} << EOF
+[openstack]
+name=OpenStack packages
+baseurl=http://${REPOSERVER}/centos/\$releasever/\$basearch
+enabled=1
+gpgcheck=0
+EOF
+
+    export YUM="yum -c ${yum_conf}"
+else
+    export YUM="yum"
 fi
 
 source "${topdir}/services/${service}"
