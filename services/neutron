@@ -18,6 +18,7 @@ NEUTRON_OS_USERNAME=${NEUTRON_OS_USERNAME:-neutron}
 NEUTRON_OS_PASSWORD=${NEUTRON_OS_PASSWORD:-admin}
 NEUTRON_MIN_VLAN_ID=${NEUTRON_MIN_VLAN_ID:-2001}
 NEUTRON_MAX_VLAN_ID=${NEUTRON_MAX_VLAN_ID:-2005}
+NEUTRON_TUNNEL_IP=${NEUTRON_TUNNEL_IP:-$HOST_ADDRESS}
 NEUTRON_MIN_VXLAN_ID=${NEUTRON_MIN_VXLAN_ID:-2001}
 NEUTRON_MAX_VXLAN_ID=${NEUTRON_MAX_VXLAN_ID:-2005}
 NOVA_OS_TENANT_NAME=${NOVA_OS_TENANT_NAME:-openstack}
@@ -49,7 +50,7 @@ configure_neutron() {
         iniset ${neutron_conf} DEFAULT service_plugins router
         iniset ${neutron_conf} DEFAULT allow_overlapping_ips True
         # rpc
-        iniset ${nova_conf} DEFAULT transport_url "rabbit://guest:guest@${RABBIT_HOSTS}"
+        iniset ${neutron_conf} DEFAULT transport_url "rabbit://guest:guest@${RABBIT_HOSTS}"
         # database
         iniset ${neutron_conf} database connection mysql://${NEUTRON_DB_USERNAME}:${NEUTRON_DB_PASSWORD}@${MYSQL_HOST}/${NEUTRON_DB_NAME}
         # keystone auth
