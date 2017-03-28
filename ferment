@@ -13,9 +13,12 @@ umask 022
 ## source functions
 topdir=$(cd $(dirname $0) && pwd)
 
+## define global variables
 USE_DIY_YUM_REPOS=false
-if [ -f "${topdir}/fermentrc" ]; then
-    source ${topdir}/fermentrc
+
+## load user defined variables
+if [ -f "${topdir}/.fermentrc" ]; then
+    source ${topdir}/.fermentrc
 fi
 source "${topdir}/services/common"
 

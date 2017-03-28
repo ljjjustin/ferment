@@ -1,7 +1,7 @@
 ferment
 ========
 
-some scripts used to deploy liberty openstack and achieve service high availability.
+some scripts used to deploy upstream openstack and achieve service high availability.
 
 # Roles
   * deployment node:
@@ -11,5 +11,5 @@ some scripts used to deploy liberty openstack and achieve service high availabil
 
 # Assumptions
   * Operating system: CentOS 7 minimal
-  * openstack release: liberty
+  * openstack release: master
   * deployment can ssh to all nodes without password
