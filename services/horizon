@@ -24,12 +24,8 @@ configure_horizon() {
             -e "s|^#*\(ALLOWED_HOSTS\s*=\)\s*\[.*\]$|\1 ['*', ]|" \
             -e "s|^\(OPENSTACK_HOST[ \t]*=\).*$|\1 '${SERVICE_HOST}'|" \
             -e "s|^\(LOCAL_PATH\s*=\).*$|\1 '/var/lib/openstack-dashboard'|"
-        memcache=$(sed -ne "/MemcachedCache/p" "$horizon_conf")
-        if [ "x" = "x$memcache" ]; then
-            sed -i "$horizon_conf" -e "s|locmem.LocMemCache'|memcached.MemcachedCache',\n\t'LOCATION': [ '${SERVICE_HOST}:11211', ]|g"
-        else
-            sed -i "$horizon_conf" -e "s|\('LOCATION':\).*$|\1 [ '${SERVICE_HOST}:11211', ],|g"
-        fi
+        sed -i "$horizon_conf" \
+            -e "s|locmem.LocMemCache'|memcached.MemcachedCache',\n\t'LOCATION': [ '${SERVICE_HOST}:11211', ]|g"
         engine=$(sed -ne "/^SESSION_ENGINE/p" "$horizon_conf")
         if [ "x" = "x$engine" ]; then
             sed -i "$horizon_conf" -e "s|^CACHES|SESSION_ENGINE = 'django.contrib.sessions.backends.cache'\nCACHES|g"
