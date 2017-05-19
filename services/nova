@@ -156,16 +156,17 @@ start_nova() {
 
     if is_controller_node; then
         start_service openstack-nova-api
-        start_service openstack-nova-placement-api
         start_service openstack-nova-conductor
         start_service openstack-nova-scheduler
         start_service openstack-nova-consoleauth
         start_service openstack-nova-novncproxy
+        restart_service httpd  # placement api
     fi
     if is_compute_node; then
         start_service libvirtd
         start_service openstack-nova-compute
     fi
+    su -s /bin/sh -c "nova-manage cell_v2 discover_hosts --verbose" nova
 }
 
 stop_nova() {
@@ -174,7 +175,6 @@ stop_nova() {
 
     if is_controller_node; then
         stop_service openstack-nova-api
-        stop_service openstack-nova-placement-api
         stop_service openstack-nova-conductor
         stop_service openstack-nova-scheduler
         stop_service openstack-nova-consoleauth

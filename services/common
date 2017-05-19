@@ -203,8 +203,18 @@ ensure_keystone_user_role() {
     fi
 }
 
+clean_keystone_env() {
+    for kv in $(printenv | grep ^OS_)
+    do
+        key=$(echo $kv | awk -F '=' '{print $1}')
+        unset $key
+    done
+}
+
 init_keystone_auth() {
     local keystone_conf='/etc/keystone/keystone.conf'
+
+    clean_keystone_env
     export OS_CACHE=false
     export OS_TOKEN=$(iniget "${keystone_conf}" DEFAULT admin_token)
     export OS_URL="http://${SERVICE_HOST}:35357/v3"
@@ -221,7 +231,7 @@ ensure_keystone_accounts() {
     ensure_keystone_project "${project_name}"
     ensure_keystone_user "${username}" "${password}"
     ensure_keystone_user_role "${project_name}" "${username}" "${role_name}"
-    unset OS_TOKEN
+    clean_keystone_env
 }
 
 ensure_keystone_service() {
@@ -241,7 +251,7 @@ ensure_keystone_service() {
         openstack endpoint create --region RegionOne "${service_type}" internal "${internal_url}"
         openstack endpoint create --region RegionOne "${service_type}" admin "${admin_url}"
     fi
-    unset OS_TOKEN
+    clean_keystone_env
 }
 
 ensure_mysql_database() {

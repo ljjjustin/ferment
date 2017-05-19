@@ -162,7 +162,6 @@ init_neutron() {
     chown neutron:neutron /var/log/neutron/*
 
     enable_service openvswitch
-    setup_bridge br-int br-tun br-vlan
     if is_controller_node; then
         enable_service neutron-server
         enable_service neutron-openvswitch-agent
@@ -183,6 +182,8 @@ start_neutron() {
     echo "Starting neutron ..."
 
     start_service openvswitch
+    setup_bridge br-int br-tun br-vlan
+
     if is_controller_node; then
         start_service neutron-server
         start_service neutron-openvswitch-agent
