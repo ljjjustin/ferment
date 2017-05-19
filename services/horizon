@@ -41,13 +41,13 @@ init_horizon() {
 start_horizon() {
     # start horizon services
     echo "Starting horizon ..."
-    start_service httpd
+    restart_service httpd
 }
 
 stop_horizon() {
     # stop horizon services
     echo "Stopping horizon ..."
-     stop_service httpd
+    stop_service httpd
 }
 
 cleanup_horizon() {

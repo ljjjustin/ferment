@@ -258,3 +258,11 @@ mysql -e "GRANT ALL ON ${mysql_db_name}.* TO '${mysql_username}'@'%' IDENTIFIED 
 mysql -e "FLUSH PRIVILEGES"
 EOF
 }
+
+
+setup_bridge() {
+    for bridge in "$@"
+    do
+        ovs-vsctl --may-exist add-br $bridge
+    done
+}

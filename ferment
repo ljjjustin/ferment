@@ -124,6 +124,7 @@ if [[ "install" == "${command}" ]]; then
     eval "init_${service}"
 elif [[ "config" == "${command}" ]]; then
     eval "configure_${service}"
+    eval "init_${service}"
 elif [[ "start" == "${command}" ]]; then
     eval "start_${service}"
 elif [[ "stop" == "${command}" ]]; then

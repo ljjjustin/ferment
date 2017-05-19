@@ -38,7 +38,9 @@ openstack-neutron-ml2
 openstack-neutron-openvswitch
 # nova
 mailcap
+bzip2
 openstack-nova-api
+openstack-nova-placement-api
 openstack-nova-conductor
 openstack-nova-scheduler
 openstack-nova-novncproxy

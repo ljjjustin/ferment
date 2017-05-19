@@ -1,0 +1,45 @@
+# lib/memcached
+#
+# ``deploy.sh`` calls in this order:
+#
+# - install_memcached
+# - configure_memcached
+# - init_memcached
+# - start_memcached
+# - stop_memcached
+# - cleanup_memcached
+
+install_memcached() {
+    # install memcached related packages
+    echo "Installing memcached ..."
+    install_package memcached
+}
+
+configure_memcached() {
+    # modify memcached config file
+    echo "Configuring memcached ..."
+}
+
+init_memcached() {
+    # handle database related config
+    echo "Initializing memcached ..."
+    enable_service memcached
+}
+
+start_memcached() {
+    # start memcached services
+    echo "Starting memcached ..."
+    start_service memcached
+}
+
+stop_memcached() {
+    # stop memcached services
+    echo "Stopping memcached ..."
+    stop_service memcached
+}
+
+cleanup_memcached() {
+    # clean up memcached packages
+    echo "Cleaning up memcached ..."
+    remove_package memcached
+}
