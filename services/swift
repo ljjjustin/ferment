@@ -1,0 +1,253 @@
+# lib/swift
+#
+# ``deploy.sh`` calls in this order:
+#
+# - install_swift
+# - configure_swift
+# - init_swift
+# - start_swift
+# - stop_swift
+# - cleanup_swift
+
+
+SWIFT_OS_TENANT_NAME=${SWIFT_OS_TENANT_NAME:-openstack}
+SWIFT_OS_USERNAME=${SWIFT_OS_USERNAME:-swift}
+SWIFT_OS_PASSWORD=${SWIFT_OS_PASSWORD:-admin}
+
+
+install_swift() {
+    # install swift related packages
+    echo "Installing swift ..."
+    if is_controller_node; then
+        install_package python-swiftclient openstack-swift-proxy
+    fi
+    if is_storage_node; then
+        install_package python-swiftclient openstack-swift-account \
+            openstack-swift-container openstack-swift-object \
+            xfsprogs rsync
+    fi
+}
+
+
+configure_swift() {
+    # modify swift config file
+    echo "Configuring swift ..."
+
+    local swift_conf=/etc/swift/swift.conf
+    if [[ ! -f "${swift_conf}" ]]; then
+        curl -o ${swift_conf} https://git.openstack.org/cgit/openstack/swift/plain/etc/swift.conf-sample?h=stable/mitaka
+    fi
+    # config hash
+    iniset ${swift_conf} swift-hash swift_hash_path_prefix ${SWIFT_HASH_PREFIX}
+    iniset ${swift_conf} swift-hash swift_hash_path_suffix ${SWIFT_HASH_SUFFIX}
+    # config storage policy
+    iniset ${swift_conf} storage-policy:0 name Policy-0
+    iniset ${swift_conf} storage-policy:0 default yes
+
+    if is_controller_node; then
+        local proxy_conf='/etc/swift/proxy-server.conf'
+
+        if [[ ! -f "${proxy_conf}" ]]; then
+            curl -o ${proxy_conf} https://git.openstack.org/cgit/openstack/swift/plain/etc/proxy-server.conf-sample?h=stable/mitaka
+        fi
+        # common
+        iniset ${proxy_conf} DEFAULT bind_port 8080
+        iniset ${proxy_conf} DEFAULT user swift
+        iniset ${proxy_conf} DEFAULT swift_dir /etc/swift
+        # pipeline
+        iniset ${proxy_conf} pipeline:main pipeline "catch_errors gatekeeper healthcheck proxy-logging cache container_sync bulk ratelimit authtoken keystoneauth container-quotas account-quotas slo dlo versioned_writes proxy-logging proxy-server"
+        # proxy-server app
+        iniset ${proxy_conf} app:proxy-server use "egg:swift#proxy"
+        iniset ${proxy_conf} app:proxy-server account_autocreate True
+        # keystone filter
+        iniset ${proxy_conf} filter:keystoneauth use "egg:swift#keystoneauth"
+        iniset ${proxy_conf} filter:keystoneauth operator_roles "admin,user"
+        # keystone authtoken
+        iniset ${proxy_conf} filter:authtoken paste.filter_factory keystonemiddleware.auth_token:filter_factory
+        iniset ${proxy_conf} filter:authtoken auth_uri http://${SERVICE_HOST}:5000
+        iniset ${proxy_conf} filter:authtoken auth_url http://${SERVICE_HOST}:35357
+        iniset ${proxy_conf} filter:authtoken memcached_servers ${SERVICE_HOST}:11211
+        iniset ${proxy_conf} filter:authtoken auth_type password
+        iniset ${proxy_conf} filter:authtoken project_domain_name Default
+        iniset ${proxy_conf} filter:authtoken user_domain_name Default
+        iniset ${proxy_conf} filter:authtoken project_name ${SWIFT_OS_TENANT_NAME}
+        iniset ${proxy_conf} filter:authtoken username ${SWIFT_OS_USERNAME}
+        iniset ${proxy_conf} filter:authtoken password ${SWIFT_OS_PASSWORD}
+        iniset ${proxy_conf} filter:authtoken delay_auth_decision True
+        # cache
+        iniset ${proxy_conf} filter:cache use "egg:swift#memcache"
+        iniset ${proxy_conf} filter:cache memcache_servers "${SERVICE_HOST:11211}"
+    fi
+
+    if is_storage_node; then
+        local account_conf="/etc/swift/account-server.conf"
+        local container_conf="/etc/swift/container-server.conf"
+        local object_conf="/etc/swift/object-server.conf"
+
+        if [[ ! -f "${account_conf}" ]]; then
+            curl -o ${account_conf} https://git.openstack.org/cgit/openstack/swift/plain/etc/account-server.conf-sample?h=stable/mitaka
+        fi
+        # common
+        iniset ${account_conf} DEFAULT bind_ip ${HOST_ADDRESS}
+        iniset ${account_conf} DEFAULT bind_port 6002
+        iniset ${account_conf} DEFAULT user swift
+        iniset ${account_conf} DEFAULT swift_dir /etc/swift
+        iniset ${account_conf} DEFAULT devices /srv/node
+        iniset ${account_conf} DEFAULT mount_check True
+        # pipeline
+        iniset ${account_conf} pipeline:main pipeline "healthcheck recon account-server"
+        # filter recon
+        iniset ${account_conf} filter:recon recon_cache_path "/var/cache/swift"
+        iniset ${account_conf} filter:recon use "egg:swift#recon"
+        # filter healthcheck
+        iniset ${account_conf} filter:healthcheck use "egg:swift#healthcheck"
+
+        if [[ ! -f "${container_conf}" ]]; then
+            curl -o ${container_conf} https://git.openstack.org/cgit/openstack/swift/plain/etc/container-server.conf-sample?h=stable/mitaka
+        fi
+        # common
+        iniset ${container_conf} DEFAULT bind_ip ${HOST_ADDRESS}
+        iniset ${container_conf} DEFAULT bind_port 6001
+        iniset ${container_conf} DEFAULT user swift
+        iniset ${container_conf} DEFAULT swift_dir /etc/swift
+        iniset ${container_conf} DEFAULT devices /srv/node
+        iniset ${container_conf} DEFAULT mount_check True
+        # pipeline
+        iniset ${container_conf} pipeline:main pipeline "healthcheck recon container-server"
+        # filter recon
+        iniset ${container_conf} filter:recon recon_cache_path "/var/cache/swift"
+        iniset ${container_conf} filter:recon use "egg:swift#recon"
+        # filter healthcheck
+        iniset ${container_conf} filter:healthcheck use "egg:swift#healthcheck"
+
+        if [[ ! -f "${object_conf}" ]]; then
+            curl -o ${object_conf} https://git.openstack.org/cgit/openstack/swift/plain/etc/object-server.conf-sample?h=stable/mitaka
+        fi
+        # common
+        iniset ${object_conf} DEFAULT bind_ip ${HOST_ADDRESS}
+        iniset ${object_conf} DEFAULT bind_port 6000
+        iniset ${object_conf} DEFAULT user swift
+        iniset ${object_conf} DEFAULT swift_dir /etc/swift
+        iniset ${object_conf} DEFAULT devices /srv/node
+        iniset ${object_conf} DEFAULT mount_check True
+        # pipeline
+        iniset ${object_conf} pipeline:main pipeline "healthcheck recon object-server"
+        # filter recon
+        iniset ${object_conf} filter:recon recon_cache_path "/var/cache/swift"
+        iniset ${object_conf} filter:recon recon_lock_path "/var/lock"
+        iniset ${object_conf} filter:recon use "egg:swift#recon"
+        # filter healthcheck
+        iniset ${object_conf} filter:healthcheck use "egg:swift#healthcheck"
+    fi
+}
+
+ensure_swift_service_catalog() {
+    local service_name="swift"
+    local service_type="object-store"
+    local service_desc="OpenStack Object Storage"
+    local public_url="http://${SERVICE_HOST}:8080/v1/AUTH_%(tenant_id)s"
+    local internal_url="http://${SERVICE_HOST}:8080/v1/AUTH_%(tenant_id)s"
+    local admin_url="http://${SERVICE_HOST}:8080/v1/AUTH_%(tenant_id)s"
+
+    ensure_keystone_service "${service_name}" "${service_type}" "${service_desc}" "${public_url}" "${internal_url}" "${admin_url}"
+    ensure_keystone_accounts "${SWIFT_OS_TENANT_NAME}" "${SWIFT_OS_USERNAME}" "${SWIFT_OS_PASSWORD}" admin
+}
+
+init_storage_node() {
+
+    # config rsync
+    cat > /etc/rsyncd.conf <<EOF
+uid = swift
+gid = swift
+log file = /var/log/rsyncd.log
+pid file = /var/run/rsyncd.pid
+address = ${HOST_ADDRESS}
+
+[account]
+max connections = 6
+path = /srv/node/
+read only = False
+lock file = /var/lock/account.lock
+
+[container]
+max connections = 6
+path = /srv/node/
+read only = False
+lock file = /var/lock/container.lock
+
+[object]
+max connections = 6
+path = /srv/node/
+read only = False
+lock file = /var/lock/object.lock
+EOF
+    # set permission
+    chown -R swift:swift /srv/node
+    mkdir -p /var/cache/swift
+    chown -R root:swift /var/cache/swift
+    chmod -R 775 /var/cache/swift
+}
+
+init_swift() {
+    # handle database related config
+    echo "Initializing swift ..."
+
+    chown -R root:swift /etc/swift
+    chown swift:swift /var/log/swift
+    chown swift:swift /var/log/swift/*
+
+    if is_controller_node; then
+        enable_service openstack-swift-proxy
+        ensure_swift_service_catalog
+    fi
+    if is_storage_node; then
+        init_storage_node
+        enable_service rsyncd
+        enable_service openstack-swift-account openstack-swift-account-auditor openstack-swift-account-reaper openstack-swift-account-replicator
+        enable_service openstack-swift-container openstack-swift-container-auditor openstack-swift-container-replicator openstack-swift-container-updater
+        enable_service openstack-swift-object openstack-swift-object-auditor openstack-swift-object-replicator openstack-swift-object-updater
+    fi
+}
+
+start_swift() {
+    # start swift services
+    echo "Starting swift ..."
+
+    if is_controller_node; then
+        start_service openstack-swift-proxy
+    fi
+    if is_storage_node; then
+        start_service rsyncd
+        start_service openstack-swift-account openstack-swift-account-auditor openstack-swift-account-reaper openstack-swift-account-replicator
+        start_service openstack-swift-container openstack-swift-container-auditor openstack-swift-container-replicator openstack-swift-container-updater
+        start_service openstack-swift-object openstack-swift-object-auditor openstack-swift-object-replicator openstack-swift-object-updater
+    fi
+}
+
+stop_swift() {
+    # stop swift services
+    echo "Stopping swift ..."
+
+    if is_controller_node; then
+        stop_service openstack-swift-proxy
+    fi
+    if is_storage_node; then
+        stop_service openstack-swift-account openstack-swift-account-auditor openstack-swift-account-reaper openstack-swift-account-replicator
+        stop_service openstack-swift-container openstack-swift-container-auditor openstack-swift-container-replicator openstack-swift-container-updater
+        stop_service openstack-swift-object openstack-swift-object-auditor openstack-swift-object-replicator openstack-swift-object-updater
+    fi
+}
+
+cleanup_swift() {
+    # clean up swift packages
+    echo "Cleaning up swift ..."
+
+    if is_controller_node;  then
+        remove_package openstack-swift-proxy
+    fi
+    if is_storage_node; then
+        remove_package openstack-swift-account
+        remove_package openstack-swift-container
+        remove_package openstack-swift-object
+    fi
+}
