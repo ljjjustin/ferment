@@ -55,8 +55,8 @@ configure_neutron() {
         iniset ${neutron_conf} database connection mysql://${NEUTRON_DB_USERNAME}:${NEUTRON_DB_PASSWORD}@${MYSQL_HOST}/${NEUTRON_DB_NAME}
         # keystone auth
         iniset ${neutron_conf} DEFAULT auth_strategy keystone
-        iniset ${neutron_conf} keystone_authtoken project_domain_name default
-        iniset ${neutron_conf} keystone_authtoken user_domain_name default
+        iniset ${neutron_conf} keystone_authtoken project_domain_name Default
+        iniset ${neutron_conf} keystone_authtoken user_domain_name Default
         iniset ${neutron_conf} keystone_authtoken auth_plugin password
         iniset ${neutron_conf} keystone_authtoken auth_uri "http://${SERVICE_HOST}:5000"
         iniset ${neutron_conf} keystone_authtoken auth_url "http://${SERVICE_HOST}:35357"
@@ -67,8 +67,8 @@ configure_neutron() {
         iniset ${neutron_conf} DEFAULT notify_nova_on_port_status_changes True
         iniset ${neutron_conf} DEFAULT notify_nova_on_port_data_changes True
         iniset ${neutron_conf} DEFAULT nova_url "http://${SERVICE_HOST}:8774/v2"
-        iniset ${neutron_conf} nova project_domain_name default
-        iniset ${neutron_conf} nova user_domain_name default
+        iniset ${neutron_conf} nova project_domain_name Default
+        iniset ${neutron_conf} nova user_domain_name Default
         iniset ${neutron_conf} nova auth_plugin password
         iniset ${neutron_conf} nova region_name RegionOne
         iniset ${neutron_conf} nova auth_uri "http://${SERVICE_HOST}:5000"
@@ -123,8 +123,8 @@ configure_neutron() {
     fi
     local metadata_agent_conf='/etc/neutron/metadata_agent.ini'
     if [[ -f "${metadata_agent_conf}" && is_controller_node ]]; then
-        iniset ${metadata_agent_conf} DEFAULT project_domain_id default
-        iniset ${metadata_agent_conf} DEFAULT user_domain_id default
+        iniset ${metadata_agent_conf} DEFAULT project_domain_name Default
+        iniset ${metadata_agent_conf} DEFAULT user_domain_name Default
         iniset ${metadata_agent_conf} DEFAULT auth_plugin password
         iniset ${metadata_agent_conf} DEFAULT auth_uri "http://${SERVICE_HOST}:5000"
         iniset ${metadata_agent_conf} DEFAULT auth_url "http://${SERVICE_HOST}:35357"

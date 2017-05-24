@@ -54,8 +54,8 @@ configure_nova() {
         iniset ${nova_conf} keystone_authtoken auth_uri http://${SERVICE_HOST}:5000
         iniset ${nova_conf} keystone_authtoken auth_url http://${SERVICE_HOST}:35357
         iniset ${nova_conf} keystone_authtoken auth_type password
-        iniset ${nova_conf} keystone_authtoken project_domain_name default
-        iniset ${nova_conf} keystone_authtoken user_domain_name default
+        iniset ${nova_conf} keystone_authtoken project_domain_name Default
+        iniset ${nova_conf} keystone_authtoken user_domain_name Default
 	iniset ${nova_conf} keystone_authtoken memcached_servers "${SERVICE_HOST}:11211"
         iniset ${nova_conf} keystone_authtoken project_name ${NOVA_OS_TENANT_NAME}
         iniset ${nova_conf} keystone_authtoken username ${NOVA_OS_USERNAME}
@@ -87,8 +87,8 @@ configure_nova() {
         # neutron api
         iniset ${nova_conf} neutron url http://${SERVICE_HOST}:9696
         iniset ${nova_conf} neutron auth_url http://${SERVICE_HOST}:35357
-        iniset ${nova_conf} neutron project_domain_id default
-        iniset ${nova_conf} neutron user_domain_id default
+        iniset ${nova_conf} neutron project_domain_name Default
+        iniset ${nova_conf} neutron user_domain_name Default
         iniset ${nova_conf} neutron auth_plugin password
         iniset ${nova_conf} neutron region_name RegionOne
         iniset ${nova_conf} neutron project_name ${NEUTRON_OS_TENANT_NAME}

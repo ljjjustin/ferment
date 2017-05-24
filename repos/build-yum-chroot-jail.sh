@@ -22,10 +22,7 @@ if [ ! -d "${rootdir}/var/lib/rpm" ]; then
 fi
 
 ## initiate rpm & yum
-if ! rpm -q --root="${rootdir}" centos-release; then
-    rpm -i --root="${rootdir}" --nodeps http://mirror.centos.org/centos/7/os/x86_64/Packages/centos-release-7-2.1511.el7.centos.2.10.x86_64.rpm
-fi
-yum --installroot="${rootdir}" install -y rpm-build yum
+yum --installroot="${rootdir}" --releasever=/ install -y centos-release epel-release yum yum-utils rpm-build
 
 ## mount proc & dev
 if ! mount | grep -q "${rootdir}/dev"; then

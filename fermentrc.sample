@@ -16,3 +16,7 @@ HOST_ADDRESS=$(ip -f inet addr show dev ${PUBLIC_INTERFACE} | grep inet | awk '{
 
 ## config node role (controller or compute)
 NODE_ROLES=${NODE_ROLES:-controller,compute}
+
+## SWIFT
+SWIFT_HASH_PREFIX=7qhn1pu3ubodwxn7u20q15to
+SWIFT_HASH_SUFFIX=ousgpp02yf7wvrva0c73i51g

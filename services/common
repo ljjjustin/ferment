@@ -18,6 +18,14 @@ is_compute_node() {
     fi
 }
 
+is_storage_node() {
+    if [[ ",${NODE_ROLES}," =~ ",storage," ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 install_package() {
     ${YUM} install -y "$@"
 }

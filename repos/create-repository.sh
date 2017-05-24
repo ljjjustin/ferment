@@ -23,18 +23,9 @@ extra_repo_config="${yum_chroot_jail_dir}/etc/yum.repos.d/extra.repo"
 generate_repos_config()
 {
     cat > ${extra_repo_config} << 'EOF'
-[epel]
-name=Extra Packages for Enterprise Linux 7 - $basearch
-#baseurl=http://download.fedoraproject.org/pub/epel/7/$basearch
-mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=epel-7&arch=$basearch
-failovermethod=priority
-enabled=1
-gpgcheck=0
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
-
-[openstack-newton]
+[openstack-mitaka]
 name=OpenStack Liberty Repository
-baseurl=http://mirrors.163.com/centos/7/cloud/$basearch/openstack-newton/
+baseurl=http://mirrors.163.com/centos/7/cloud/$basearch/openstack-mitaka/
 enabled=1
 gpgcheck=0
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-SIG-Cloud

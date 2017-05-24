@@ -41,8 +41,8 @@ configure_cinder() {
         iniset ${cinder_conf} keystone_authtoken auth_uri http://${SERVICE_HOST}:5000
         iniset ${cinder_conf} keystone_authtoken auth_url http://${SERVICE_HOST}:35357
         iniset ${cinder_conf} keystone_authtoken auth_plugin password
-        iniset ${cinder_conf} keystone_authtoken project_domain_id default
-        iniset ${cinder_conf} keystone_authtoken user_domain_id default
+        iniset ${cinder_conf} keystone_authtoken project_domain_name Default
+        iniset ${cinder_conf} keystone_authtoken user_domain_name Default
         iniset ${cinder_conf} keystone_authtoken project_name ${CINDER_OS_TENANT_NAME}
         iniset ${cinder_conf} keystone_authtoken username ${CINDER_OS_USERNAME}
         iniset ${cinder_conf} keystone_authtoken password ${CINDER_OS_PASSWORD}

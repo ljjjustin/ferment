@@ -31,8 +31,8 @@ configure_glance() {
     if [[ -f "${glance_reg_conf}" ]]; then
         iniset ${glance_reg_conf} DEFAULT notification_driver noop
         iniset ${glance_reg_conf} database connection mysql://${GLANCE_DB_USERNAME}:${GLANCE_DB_PASSWORD}@${MYSQL_HOST}/${GLANCE_DB_NAME}
-        iniset ${glance_reg_conf} keystone_authtoken project_domain_id default
-        iniset ${glance_reg_conf} keystone_authtoken user_domain_id default
+        iniset ${glance_reg_conf} keystone_authtoken project_domain_name Default
+        iniset ${glance_reg_conf} keystone_authtoken user_domain_name Default
         iniset ${glance_reg_conf} keystone_authtoken auth_plugin password
         iniset ${glance_reg_conf} keystone_authtoken auth_uri http://${SERVICE_HOST}:5000
         iniset ${glance_reg_conf} keystone_authtoken auth_url http://${SERVICE_HOST}:35357
@@ -47,8 +47,8 @@ configure_glance() {
         iniset ${glance_api_conf} DEFAULT registry_host ${GLANCE_BIND_HOST}
         iniset ${glance_api_conf} DEFAULT notification_driver noop
         iniset ${glance_api_conf} database connection mysql://${GLANCE_DB_USERNAME}:${GLANCE_DB_PASSWORD}@${MYSQL_HOST}/${GLANCE_DB_NAME}
-        iniset ${glance_api_conf} keystone_authtoken project_domain_id default
-        iniset ${glance_api_conf} keystone_authtoken user_domain_id default
+        iniset ${glance_api_conf} keystone_authtoken project_domain_name Default
+        iniset ${glance_api_conf} keystone_authtoken user_domain_name Default
         iniset ${glance_api_conf} keystone_authtoken auth_plugin password
         iniset ${glance_api_conf} keystone_authtoken auth_uri http://${SERVICE_HOST}:5000
         iniset ${glance_api_conf} keystone_authtoken auth_url http://${SERVICE_HOST}:35357
