@@ -61,6 +61,7 @@ openstack-trove-api
 openstack-trove-conductor
 openstack-trove-taskmanager
 openstack-trove-guestagent
+openstack-trove-ui
 # swift
 python-swiftclient
 openstack-swift

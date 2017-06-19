@@ -59,6 +59,7 @@ configure_trove() {
         iniset ${trove_conf} keystone_authtoken project_name ${TROVE_OS_TENANT_NAME}
         iniset ${trove_conf} keystone_authtoken username ${TROVE_OS_USERNAME}
         iniset ${trove_conf} keystone_authtoken password ${TROVE_OS_PASSWORD}
+        iniset ${trove_conf} keystone_authtoken memcached_servers ${SERVICE_HOST}:11211
         # misc
         iniset ${trove_conf} DEFAULT add_addresses True
         iniset ${trove_conf} DEFAULT api_paste_config /etc/trove/api-paste.ini
