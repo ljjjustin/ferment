@@ -46,6 +46,7 @@ configure_cinder() {
         iniset ${cinder_conf} keystone_authtoken project_name ${CINDER_OS_TENANT_NAME}
         iniset ${cinder_conf} keystone_authtoken username ${CINDER_OS_USERNAME}
         iniset ${cinder_conf} keystone_authtoken password ${CINDER_OS_PASSWORD}
+        iniset ${cinder_conf} keystone_authtoken memcached_servers ${SERVICE_HOST}:11211
         # oslo concurrentcy
         iniset ${cinder_conf} oslo_concurrency lock_path "/var/lib/cinder/tmp"
         # misc
@@ -59,6 +60,7 @@ configure_cinder() {
 
 init_database() {
     ensure_mysql_database "${MYSQL_HOST}" "${CINDER_DB_USERNAME}" "${CINDER_DB_PASSWORD}" "${CINDER_DB_NAME}"
+    su -s /bin/sh -c "cinder-manage db sync" cinder
 }
 
 ensure_cinder_service_catalog() {
@@ -86,9 +88,10 @@ init_cinder() {
 
     # handle database related config
     init_database
-    cinder-manage db sync
+
     chown cinder:cinder /var/log/cinder
     chown cinder:cinder /var/log/cinder/*
+
     ensure_cinder_service_catalog
 }
 
@@ -96,12 +99,14 @@ start_cinder() {
     # start cinder services
     echo "Starting cinder ..."
     start_service openstack-cinder-api
+    start_service openstack-cinder-scheduler
 }
 
 stop_cinder() {
     # stop cinder services
     echo "Stopping cinder ..."
     stop_service openstack-cinder-api
+    stop_service openstack-cinder-scheduler
 }
 
 cleanup_cinder() {
