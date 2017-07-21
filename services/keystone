@@ -53,6 +53,28 @@ ensure_keystone_service_catalog() {
     ensure_keystone_service "${service_name}" "${service_type}" "${service_desc}" "${public_url}" "${internal_url}" "${admin_url}"
 }
 
+generate_adminrc() {
+
+    ensure_keystone_accounts "${ADMIN_TENANT_NAME}" "${ADMIN_USERNAME}" "${ADMIN_PASSWORD}" admin
+
+    cat > ~/adminrc << EOF
+export OS_PROJECT_DOMAIN_NAME=Default
+export OS_USER_DOMAIN_NAME=Default
+export OS_PROJECT_NAME=${ADMIN_TENANT_NAME}
+export OS_TENANT_NAME=${ADMIN_TENANT_NAME}
+export OS_USERNAME=${ADMIN_USERNAME}
+export OS_PASSWORD=${ADMIN_PASSWORD}
+export OS_AUTH_URL=http://${SERVICE_HOST}:35357/v3
+export OS_IDENTITY_API_VERSION=3
+export OS_VOLUME_API_VERSION=2
+EOF
+
+    # test adminrc
+    for env in $(printenv | grep OS_ | awk -F '=' '{print $1}'); do unset $env; done
+    source ~/adminrc
+    openstack token issue
+}
+
 init_keystone() {
     echo "Initializing keystone ..."
     enable_service openstack-keystone
@@ -64,6 +86,7 @@ init_keystone() {
 
     chown keystone:keystone /var/log/keystone
     chown keystone:keystone /var/log/keystone/*
+
     ensure_keystone_service_catalog
 }
 
