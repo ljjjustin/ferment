@@ -1,0 +1,16 @@
+---
+
+# This playbook will install and config mysql.
+
+- name: Install mysql
+  yum: name={{ item }} state=installed
+  with_items:
+    - mariadb-server
+
+- name: Configure mysql
+  template: src=my.cnf.j2 dest=/etc/my.cnf
+  notify:
+    - restart mysql
+
+- name: Start mysql
+  service: name=mariadb state=started enabled=yes
