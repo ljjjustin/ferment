@@ -1,0 +1,22 @@
+---
+# Handler for rabbitmq notifications.
+
+- name: restart rabbitmq
+  service:
+    name: rabbitmq-server
+    state: restarted
+
+- name: reload rabbitmq
+  service:
+    name: rabbitmq-server
+    state: reloaded
+
+- name: start rabbitmq
+  service:
+    name: rabbitmq-server
+    state: started
+
+- name: stop rabbitmq
+  service:
+    name: rabbitmq-server
+    state: stopped
