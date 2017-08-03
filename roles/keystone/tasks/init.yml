@@ -1,0 +1,50 @@
+---
+- name: ensure database is synchronized
+  command: su -s /bin/sh -c "keystone-manage db_sync" keystone
+
+- name: setup fernet keys
+  command: keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone
+
+- name: start keystone
+  service:
+    name: httpd
+    state: restarted
+    enabled: yes
+
+- name: wait until keystone is running
+  wait_for:
+    host: "{{ keystone_host }}"
+    port: 35357
+
+- name: execute bootstrap for keystone
+  command: >
+    keystone-manage bootstrap
+    --bootstrap-password {{ keystone_admin_password }}
+    --bootstrap-admin-url {{ keystone_admin_url }}
+    --bootstrap-internal-url {{ keystone_internal_url }}
+    --bootstrap-public-url {{ keystone_public_url }}
+    --bootstrap-region-id {{ region_name }}
+
+- name: Create openrc file
+  template:
+    src: openrc.j2
+    dest: "{{ openrc_file_dest }}"
+    owner: "{{ openrc_file_owner }}"
+    group: "{{ openrc_file_group }}"
+    mode: "{{ openrc_file_mode }}"
+
+- name: Create OpenStack client configuration directory
+  file:
+    dest: "{{ openrc_openstack_client_config_dir_dest }}"
+    owner: "{{ openrc_openstack_client_config_dir_owner }}"
+    group: "{{ openrc_openstack_client_config_dir_group }}"
+    mode: "{{ openrc_openstack_client_config_dir_mode }}"
+    state: directory
+
+- name: Create clouds.yaml file
+  template:
+    src: clouds.yaml.j2
+    dest: "{{ openrc_clouds_yml_file_dest }}"
+    owner: "{{ openrc_clouds_yml_file_owner }}"
+    group: "{{ openrc_clouds_yml_file_group }}"
+    mode: "{{ openrc_clouds_yml_file_mode }}"

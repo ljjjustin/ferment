@@ -1,0 +1,7 @@
+---
+# this playbook install and config openstack keystone.
+
+- include: install.yml
+- include: mysql.yml
+- include: config.yml
+- include: init.yml

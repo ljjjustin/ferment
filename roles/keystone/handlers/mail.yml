@@ -1,0 +1,22 @@
+---
+# Handler for keystone notifications.
+
+- name: restart keystone
+  service:
+    name: httpd
+    state: restarted
+
+- name: reload keystone
+  service:
+    name: httpd
+    state: reloaded
+
+- name: start keystone
+  service:
+    name: httpd
+    state: started
+
+- name: stop keystone
+  service:
+    name: httpd
+    state: stopped

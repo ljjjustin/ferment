@@ -1,0 +1,12 @@
+---
+# This playbook deploys a all in one openstack develop environment.
+
+- name: deploy a openstack cluster
+  hosts: all
+
+  roles:
+    - common
+    - mysql
+    - memcached
+    - rabbitmq
+    - keystone

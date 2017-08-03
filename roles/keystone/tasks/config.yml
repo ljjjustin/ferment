@@ -1,0 +1,21 @@
+---
+- name: ensure keystone is disabled (run under apache)
+  service:
+    name: openstack-keystone
+    state: stopped
+    enabled: no
+
+- name: config keystone service
+  template:
+    src: keystone.conf.j2
+    dest: /etc/keystone/keystone.conf
+    owner: keystone
+    group: keystone
+
+- name: config wsgi for keystone
+  copy:
+    src: wsgi-keystone.conf
+    dest: /etc/httpd/conf.d/
+    owner: root
+    group: root
+    mode: 0644
