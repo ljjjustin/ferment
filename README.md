@@ -1,15 +1,18 @@
-ferment
-========
+ferment ansible branch
+=======================
 
-some scripts used to deploy upstream openstack and achieve service high availability.
-
-# Roles
-  * deployment node:
-  * load balance:
-  * control node:
-  * compute node:
+ansible scripts used to deploy a all in one openstack dev environment.
 
 # Assumptions
   * Operating system: CentOS 7 minimal
   * openstack release: master
   * deployment can ssh to all nodes without password
+
+# Supported projects
+  * keystone
+  * glance
+  * cinder
+  * neutron
+  * nova
+  * heat
+  * swift
