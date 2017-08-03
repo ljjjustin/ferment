@@ -1,0 +1,18 @@
+---
+
+# Variables listed here are applicable to all host groups
+
+ntpserver: pool.ntp.org
+
+database_host: "10.0.13.11"
+rabbitmq_host: "10.0.13.11"
+keystone_host: "10.0.13.11"
+
+region_name: "RegionOne"
+
+keystone_db_password: "{{ lookup('password', inventory_dir + '/credentials/keystone-db-password chars=ascii_letters') }}"
+keystone_admin_token: "{{ lookup('password', inventory_dir + '/credentials/keystone-admin-token chars=ascii_letters') }}"
+keystone_admin_password: "{{ lookup('password', inventory_dir + '/credentials/keystone-admin-password chars=ascii_letters') }}"
+keystone_admin_url: "http://{{ keystone_host }}:5000/v3"
+keystone_public_url: "http://{{ keystone_host }}:5000/v3"
+keystone_internal_url: "http://{{ keystone_host }}:5000/v3"
