@@ -7,11 +7,10 @@ openrc_os_endpoint_type: internalURL
 openrc_clouds_yml_interface: internal
 
 ## Default credentials
+openrc_os_tenant_name: admin
 openrc_os_username: admin
 openrc_os_password: "{{ keystone_admin_password }}"
-openrc_os_tenant_name: admin
 openrc_os_auth_url: "http://{{ keystone_host }}:5000"
-openrc_os_tenant_name: admin
 openrc_os_domain_name: default
 openrc_region_name: "{{ region_name }}"
 
