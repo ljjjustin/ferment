@@ -1,0 +1,30 @@
+---
+- name: config glance api
+  template:
+    src: glance-api.conf.j2
+    dest: /etc/glance/glance-api.conf
+    owner: glance
+    group: glance
+
+- name: config glance api paste
+  file:
+    src: /usr/share/glance/glance-api-dist-paste.ini
+    dest: /etc/glance/glance-api-paste.ini
+    owner: glance
+    group: glance
+    state: link
+
+- name: config glance registry
+  template:
+    src: glance-registry.conf.j2
+    dest: /etc/glance/glance-registry.conf
+    owner: glance
+    group: glance
+
+- name: config glance registry paste
+  file:
+    src: /usr/share/glance/glance-registry-dist-paste.ini
+    dest: /etc/glance/glance-registry-paste.ini
+    owner: glance
+    group: glance
+    state: link

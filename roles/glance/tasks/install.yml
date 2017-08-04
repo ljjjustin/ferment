@@ -1,0 +1,6 @@
+---
+- name: install glance
+  yum: name={{ item }} state=latest
+  with_items:
+    - openstack-glance
+    - python-glanceclient

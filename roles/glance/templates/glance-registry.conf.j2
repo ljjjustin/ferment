@@ -1,0 +1,24 @@
+[DEFAULT]
+bind_host = 0.0.0.0
+bind_port = 9191
+workers = 2
+backlog = 4096
+debug = False
+verbose = False
+log_file = /var/log/glance/registry.log
+log_dir = /var/log/glance
+use_syslog = False
+use_stderr = True
+
+[database]
+connection = mysql+pymysql://glance:{{ glance_db_password }}@{{ database_host }}/glance?charset=utf8
+
+[paste_deploy]
+flavor = keystone
+
+[keystone_authtoken]
+auth_uri = http://{{ keystone_host }}:5000/
+admin_tenant_name=openstack
+admin_user={{ glance_os_username }}
+admin_password={{ glance_os_password }}
+identity_uri=http://{{ keystone_host }}:35357

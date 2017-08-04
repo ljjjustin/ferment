@@ -10,3 +10,4 @@
     - memcached
     - rabbitmq
     - keystone
+    - glance

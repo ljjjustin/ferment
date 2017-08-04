@@ -1,0 +1,35 @@
+[DEFAULT]
+bind_host = 0.0.0.0
+bind_port = 9292
+workers = 2
+backlog = 4096
+show_image_direct_url = True
+image_cache_dir = /var/lib/glance/image-cache
+registry_host = 127.0.0.1
+registry_port = 9191
+registry_client_protocol = http
+debug = False
+verbose = False
+log_file = /var/log/glance/api.log
+log_dir = /var/log/glance
+use_syslog = False
+use_stderr = True
+notification_driver=noop
+
+[database]
+connection = mysql+pymysql://glance:{{ glance_db_password }}@{{ database_host }}/glance?charset=utf8
+
+[glance_store]
+stores = file,http
+default_store = file
+filesystem_store_datadir = /var/lib/glance/images/
+
+[paste_deploy]
+flavor = keystone
+
+[keystone_authtoken]
+auth_uri = http://{{ keystone_host }}:5000/
+admin_tenant_name=openstack
+admin_user={{ glance_os_username }}
+admin_password={{ glance_os_password }}
+identity_uri=http://{{ keystone_host }}:35357
