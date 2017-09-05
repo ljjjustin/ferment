@@ -1,0 +1,68 @@
+[DEFAULT]
+# common configs
+debug = False
+use_syslog = False
+log_dir = /var/log/cinder
+auth_strategy = keystone
+
+storage_availability_zone = nova
+default_availability_zone = nova
+
+# api configs
+api_paste_config = /etc/cinder/api-paste.ini
+enable_v1_api = True
+enable_v2_api = True
+enable_v3_api = True
+osapi_volume_listen = 0.0.0.0
+osapi_volume_workers = 4
+
+glance_host = http://{{ glance_host }}
+glance_api_servers = {{ glance_host }}:9292
+glance_api_version = 2
+
+no_snapshot_gb_quota = True
+quota_driver = cinder.quota.DbQuotaDriver
+
+os_region_name = RegionOne
+nova_catalog_info = compute:Compute Service:publicURL
+nova_catalog_admin_info = compute:Compute Service:adminURL
+
+rpc_backend = rabbit
+control_exchange = cinder
+notification_driver=messagingv2
+
+# storage backends
+enabled_backends = lvm
+
+[database]
+connection = mysql+pymysql://cinder:{{ cinder_db_password }}@{{ database_host }}/cinder?charset=utf8
+
+[keystone_authtoken]
+auth_uri = http://{{ keystone_host }}:5000/
+admin_tenant_name=openstack
+admin_user={{ cinder_os_username }}
+admin_password={{ cinder_os_password }}
+identity_uri=http://{{ keystone_host }}:35357
+
+[oslo_concurrency]
+lock_path = /var/lib/cinder/tmp
+
+[oslo_messaging_notifications]
+driver = messagingv2
+
+[oslo_messaging_rabbit]
+amqp_durable_queues = True
+rabbit_hosts = {{ rabbitmq_host }}:5672
+rabbit_use_ssl = False
+rabbit_userid = openstack
+rabbit_password = {{ rabbitmq_password }}
+rabbit_virtual_host = /
+rabbit_ha_queues = False
+heartbeat_timeout_threshold = 30
+heartbeat_rate = 2
+
+[lvm]
+iscsi_helper=lioadm
+volume_driver=cinder.volume.drivers.lvm.LVMVolumeDriver
+volume_backend_name=lvm
+volume_group = cinder-volumes

@@ -1,0 +1,67 @@
+---
+- name: ensure cinder project
+  os_project:
+    cloud: default
+    state: present
+    name: openstack
+    description: "openstack services"
+    domain_id: default
+    enabled: true
+
+- name: ensure cinder user
+  os_user:
+    cloud: default
+    state: present
+    name: "{{ cinder_os_username }}"
+    password: "{{ cinder_os_password }}"
+    domain: default
+    default_project: openstack
+
+- name: ensure cinder user is admin role
+  os_user_role:
+    cloud: default
+    user: "{{ cinder_os_username }}"
+    role: "admin"
+    project: "openstack"
+
+- name: ensure cinder service
+  os_keystone_service:
+    cloud: default
+    state: present
+    name: cinder
+    service_type: volume
+    description: "OpenStack Volume Service"
+
+- name: ensure cinder endpoints
+  os_keystone_endpoint:
+    region: "{{ region_name }}"
+    service_name: "cinder"
+    url: "{{ cinder_v1_url }}"
+
+- name: ensure cinder v2 service
+  os_keystone_service:
+    cloud: default
+    state: present
+    name: cinderv2
+    service_type: volumev2
+    description: "OpenStack Volume Service V2"
+
+- name: ensure cinder endpoints
+  os_keystone_endpoint:
+    region: "{{ region_name }}"
+    service_name: "cinderv2"
+    url: "{{ cinder_v2_url }}"
+
+- name: ensure cinder v3 service
+  os_keystone_service:
+    cloud: default
+    state: present
+    name: cinderv3
+    service_type: volumev3
+    description: "OpenStack Volume Service V3"
+
+- name: ensure cinder endpoints
+  os_keystone_endpoint:
+    region: "{{ region_name }}"
+    service_name: "cinderv3"
+    url: "{{ cinder_v3_url }}"

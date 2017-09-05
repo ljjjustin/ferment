@@ -1,0 +1,8 @@
+---
+# this playbook install and config openstack cinder.
+
+- include: install.yml
+- include: config.yml
+- include: mysql.yml
+- include: keystone.yml
+- include: services.yml

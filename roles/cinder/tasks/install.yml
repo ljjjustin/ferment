@@ -1,0 +1,6 @@
+---
+- name: install cinder
+  yum: name={{ item }} state=latest
+  with_items:
+    - openstack-cinder
+    - python-cinderclient

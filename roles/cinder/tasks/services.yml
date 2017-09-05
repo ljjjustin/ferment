@@ -1,0 +1,12 @@
+---
+- name: ensure cinder api start on boot
+  service:
+    name: openstack-cinder-api
+    state: started
+    enabled: yes
+
+- name: ensure cinder scheduler start on boot
+  service:
+    name: openstack-cinder-scheduler
+    state: started
+    enabled: yes

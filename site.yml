@@ -11,3 +11,4 @@
     - rabbitmq
     - keystone
     - glance
+    - cinder

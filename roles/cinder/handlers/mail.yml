@@ -1,0 +1,46 @@
+---
+# Handler for cinder notifications.
+
+- name: restart cinder
+  service:
+    name: openstack-cinder-api
+    state: restarted
+  service:
+    name: openstack-cinder-scheduler
+    state: restarted
+  service:
+    name: openstack-cinder-volume
+    state: restarted
+
+- name: reload cinder
+  service:
+    name: openstack-cinder-api
+    state: reload
+  service:
+    name: openstack-cinder-scheduler
+    state: reload
+  service:
+    name: openstack-cinder-volume
+    state: reload
+
+- name: start cinder
+  service:
+    name: openstack-cinder-api
+    state: started
+  service:
+    name: openstack-cinder-scheduler
+    state: started
+  service:
+    name: openstack-cinder-volume
+    state: started
+
+- name: stop cinder
+  service:
+    name: openstack-cinder-api
+    state: stopped
+  service:
+    name: openstack-cinder-scheduler
+    state: stopped
+  service:
+    name: openstack-cinder-volume
+    state: stopped
