@@ -1,34 +1,32 @@
 ---
 # Handler for glance notifications.
 
-- name: restart glance
+- name: restart glance api
   service:
     name: openstack-glance-api
     state: restarted
-  service:
-    name: openstack-glance-registry
-    state: restarted
 
-- name: reload glance
-  service:
-    name: openstack-glance-api
-    state: reload
-  service:
-    name: openstack-glance-registry
-    state: reload
-
-- name: start glance
+- name: start glance api
   service:
     name: openstack-glance-api
     state: started
-  service:
-    name: openstack-glance-registry
-    state: started
 
-- name: stop glance
+- name: stop glance api
   service:
     name: openstack-glance-api
     state: stopped
+
+- name: restart glance registry
+  service:
+    name: openstack-glance-registry
+    state: restarted
+
+- name: start glance registry
+  service:
+    name: openstack-glance-registry
+    state: started
+
+- name: stop glance registry
   service:
     name: openstack-glance-registry
     state: stopped
