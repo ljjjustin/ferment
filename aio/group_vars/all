@@ -4,12 +4,13 @@
 
 ntpserver: pool.ntp.org
 
-database_host: "10.0.13.11"
-rabbitmq_host: "10.0.13.11"
-
 region_name: "RegionOne"
 
-keystone_host: "10.0.13.11"
+database_host: "10.70.238.48"
+rabbitmq_host: "10.70.238.48"
+rabbitmq_password: "{{ lookup('password', inventory_dir + '/credentials/rabbitmq-password chars=ascii_letters') }}"
+
+keystone_host: "10.70.238.48"
 keystone_admin_token: "{{ lookup('password', inventory_dir + '/credentials/keystone-admin-token chars=ascii_letters') }}"
 keystone_db_password: "{{ lookup('password', inventory_dir + '/credentials/keystone-db-password chars=ascii_letters') }}"
 keystone_admin_password: "{{ lookup('password', inventory_dir + '/credentials/keystone-admin-password chars=ascii_letters') }}"
@@ -17,10 +18,34 @@ keystone_admin_url: "http://{{ keystone_host }}:5000/v3"
 keystone_public_url: "http://{{ keystone_host }}:5000/v3"
 keystone_internal_url: "http://{{ keystone_host }}:5000/v3"
 
-glance_host: "10.0.13.11"
+glance_host: "10.70.238.48"
 glance_os_username: "glance"
 glance_os_password: "{{ lookup('password', inventory_dir + '/credentials/glance-os-password chars=ascii_letters') }}"
 glance_db_password: "{{ lookup('password', inventory_dir + '/credentials/glance-db-password chars=ascii_letters') }}"
 glance_admin_url: "http://{{ glance_host }}:9292"
 glance_public_url: "http://{{ glance_host }}:9292"
 glance_internal_url: "http://{{ glance_host }}:9292"
+
+cinder_host: "10.70.238.48"
+cinder_os_username: "cinder"
+cinder_os_password: "{{ lookup('password', inventory_dir + '/credentials/cinder-os-password chars=ascii_letters') }}"
+cinder_db_password: "{{ lookup('password', inventory_dir + '/credentials/cinder-db-password chars=ascii_letters') }}"
+cinder_v1_url: "http://{{ cinder_host }}:8776/v1/%(tenant_id)s"
+cinder_v2_url: "http://{{ cinder_host }}:8776/v2/%(tenant_id)s"
+cinder_v3_url: "http://{{ cinder_host }}:8776/v3/%(tenant_id)s"
+
+neutron_host: "10.70.238.48"
+neutron_os_username: "neutron"
+neutron_os_password: "{{ lookup('password', inventory_dir + '/credentials/neutron-os-password chars=ascii_letters') }}"
+neutron_db_password: "{{ lookup('password', inventory_dir + '/credentials/neutron-db-password chars=ascii_letters') }}"
+neutron_admin_url: "http://{{ neutron_host }}:9696"
+neutron_public_url: "http://{{ neutron_host }}:9696"
+neutron_internal_url: "http://{{ neutron_host }}:9696"
+
+nova_host: "10.70.238.48"
+nova_os_username: "nova"
+nova_os_password: "{{ lookup('password', inventory_dir + '/credentials/nova-os-password chars=ascii_letters') }}"
+nova_db_password: "{{ lookup('password', inventory_dir + '/credentials/nova-db-password chars=ascii_letters') }}"
+nova_admin_url: "http://{{ nova_host }}:8774"
+nova_public_url: "http://{{ nova_host }}:8774"
+nova_internal_url: "http://{{ nova_host }}:8774"

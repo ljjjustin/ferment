@@ -21,3 +21,14 @@
     name: rabbitmq-server
     state: started
     enabled: yes
+
+- name: create admin user for openstack services
+  rabbitmq_user:
+    user: openstack
+    password: "{{ rabbitmq_password }}"
+    permissions:
+      - vhost: /
+        configure_priv: .*
+        read_priv: .*
+        write_priv: .*
+    state: present
