@@ -12,3 +12,5 @@
     - keystone
     - glance
     - cinder
+    - neutron
+    - nova

@@ -7,6 +7,8 @@ ntpserver: pool.ntp.org
 region_name: "RegionOne"
 
 database_host: "10.70.238.48"
+memcached_host: "10.70.238.48"
+
 rabbitmq_host: "10.70.238.48"
 rabbitmq_password: "{{ lookup('password', inventory_dir + '/credentials/rabbitmq-password chars=ascii_letters') }}"
 
@@ -38,14 +40,11 @@ neutron_host: "10.70.238.48"
 neutron_os_username: "neutron"
 neutron_os_password: "{{ lookup('password', inventory_dir + '/credentials/neutron-os-password chars=ascii_letters') }}"
 neutron_db_password: "{{ lookup('password', inventory_dir + '/credentials/neutron-db-password chars=ascii_letters') }}"
-neutron_admin_url: "http://{{ neutron_host }}:9696"
 neutron_public_url: "http://{{ neutron_host }}:9696"
-neutron_internal_url: "http://{{ neutron_host }}:9696"
 
 nova_host: "10.70.238.48"
 nova_os_username: "nova"
 nova_os_password: "{{ lookup('password', inventory_dir + '/credentials/nova-os-password chars=ascii_letters') }}"
 nova_db_password: "{{ lookup('password', inventory_dir + '/credentials/nova-db-password chars=ascii_letters') }}"
-nova_admin_url: "http://{{ nova_host }}:8774"
+metadata_shared_secret: "{{ lookup('password', inventory_dir + '/credentials/metadata-shared-secret chars=ascii_letters') }}"
 nova_public_url: "http://{{ nova_host }}:8774"
-nova_internal_url: "http://{{ nova_host }}:8774"

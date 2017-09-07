@@ -1,0 +1,19 @@
+[DEFAULT]
+debug = false
+
+[ml2]
+type_drivers = flat,vxlan
+tenant_network_types = vxlan
+mechanism_drivers = openvswitch,l2population
+extension_drivers = port_security,qos
+path_mtu = 0
+
+[ml2_type_flat]
+flat_networks = *
+
+[ml2_type_vlan]
+#network_vlan_ranges = physnet1:1670:1720
+
+[ml2_type_vxlan]
+vni_ranges =10:50000
+vxlan_group = 224.0.0.1

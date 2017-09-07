@@ -1,0 +1,62 @@
+---
+# Handler for neutron notifications.
+
+- name: restart neutron server
+  service:
+    name: neutron-server
+    state: restarted
+
+- name: start neutron server
+  service:
+    name: neutron-server
+    state: started
+
+- name: stop neutron server
+  service:
+    name: neutron-server
+    state: stopped
+
+- name: restart openvswitch agent
+  service:
+    name: neutron-openvswitch-agent
+    state: restarted
+
+- name: start openvswitch agent
+  service:
+    name: neutron-openvswitch-agent
+    state: started
+
+- name: stop openvswitch agent
+  service:
+    name: neutron-openvswitch-agent
+    state: stopped
+
+- name: restart dhcp agent
+  service:
+    name: neutron-dhcp-agent
+    state: restarted
+
+- name: start dhcp agent
+  service:
+    name: neutron-dhcp-agent
+    state: started
+
+- name: stop dhcp agent
+  service:
+    name: neutron-dhcp-agent
+    state: stopped
+
+- name: restart vpn agent
+  service:
+    name: neutron-vpn-agent
+    state: restarted
+
+- name: start vpn agent
+  service:
+    name: neutron-vpn-agent
+    state: started
+
+- name: stop vpn agent
+  service:
+    name: neutron-vpn-agent
+    state: stopped

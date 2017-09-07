@@ -1,0 +1,36 @@
+---
+- name: ensure nova api start on boot
+  service:
+    name: openstack-nova-api
+    state: started
+    enabled: yes
+
+- name: ensure nova novncproxy start on boot
+  service:
+    name: openstack-nova-novncproxy
+    state: started
+    enabled: yes
+
+- name: ensure nova conductor start on boot
+  service:
+    name: openstack-nova-conductor
+    state: started
+    enabled: yes
+
+- name: ensure nova scheduler start on boot
+  service:
+    name: openstack-nova-scheduler
+    state: started
+    enabled: yes
+
+- name: ensure nova consoleauth start on boot
+  service:
+    name: openstack-nova-consoleauth
+    state: started
+    enabled: yes
+
+- name: ensure nova compute start on boot
+  service:
+    name: openstack-nova-compute
+    state: started
+    enabled: yes

@@ -1,0 +1,81 @@
+[DEFAULT]
+
+core_plugin=ml2
+service_plugins=router,vpnaas,neutron_lbaas.services.loadbalancer.plugin.LoadBalancerPluginv2,qos,metering
+
+log_dir = /var/log/neutron
+use_syslog = False
+use_stderr = True
+
+auth_strategy = keystone
+
+api_workers=1
+api_paste_config=/usr/share/neutron/api-paste.ini
+allow_pagination=True
+allow_sorting=True
+allow_overlapping_ips=True
+
+rpc_backend=rabbit
+control_exchange=neutron
+notification_driver=messagingv2
+rpc_workers=1
+
+dhcp_agents_per_network=1
+
+notify_nova_on_port_status_changes=True
+notify_nova_on_port_data_changes=True
+nova_admin_auth_url=http://{{ keystone_host }}:35357/v2.0
+nova_admin_username={{ nova_os_username }}
+nova_admin_tenant_name=admin
+nova_url=http://{{ nova_host }}:8774/v2
+nova_admin_password={{ nova_os_password }}
+
+router_scheduler_driver=neutron.scheduler.l3_agent_scheduler.ChanceScheduler
+l3_ha=False
+l2_population=False
+
+[agent]
+root_helper=sudo neutron-rootwrap /etc/neutron/rootwrap.conf
+
+[database]
+connection=mysql://neutron:{{ neutron_db_password }}@{{ database_host }}/neutron?charset=utf8
+
+[keystone_authtoken]
+auth_uri=http://{{ keystone_host }}:5000
+identity_uri=http://{{ keystone_host }}:35357
+admin_tenant_name=openstack
+admin_user={{ neutron_os_username }}
+admin_password={{ neutron_os_password }}
+
+[nova]
+auth_plugin=password
+auth_url=http://{{ keystone_host }}:35357
+username=nova
+password={{ nova_os_password }}
+user_domain_id=default
+project_name=openstack
+project_domain_id=default
+region_name={{ region_name }}
+
+[oslo_concurrency]
+lock_path=$state_path/lock
+
+[oslo_messaging_rabbit]
+amqp_durable_queues=True
+rabbit_hosts=192.168.17.15:5672
+rabbit_userid=openstack
+rabbit_password={{ rabbitmq_password }}
+rabbit_ha_queues=True
+heartbeat_timeout_threshold=30
+heartbeat_rate=2
+
+[quotas]
+quota_firewall_rule=-1
+quota_network_gateway=5
+quota_packet_filter=100
+
+[service_providers]
+service_provider=VPN:Libreswan:neutron_vpnaas.services.vpn.service_drivers.ipsec.IPsecVPNDriver:default
+service_provider=VPN:Openvpn:neutron_vpnaas.services.vpn.service_drivers.openvpn.OpenVPNDriver
+service_provider=LOADBALANCERV2:Haproxy:neutron_lbaas.drivers.haproxy.plugin_driver.HaproxyOnHostPluginDriver:default
+service_provider=FIREWALL:Iptables:neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver:default

@@ -1,0 +1,131 @@
+[DEFAULT]
+# common configs
+debug=True
+use_syslog=False
+log_dir=/var/log/nova
+state_path=/var/lib/nova
+auth_strategy=keystone
+
+# nova api configs
+enabled_apis=osapi_compute,metadata
+
+osapi_compute_listen=0.0.0.0
+osapi_compute_listen_port=8774
+osapi_compute_workers=2
+
+metadata_listen=0.0.0.0
+metadata_listen_port=8775
+metadata_workers=2
+
+# scheduler configs
+cpu_allocation_ratio=16.0
+ram_allocation_ratio=1
+disk_allocation_ratio=3.0
+allow_resize_to_same_host=False
+reserved_host_memory_mb=512
+scheduler_host_subset_size=1
+baremetal_scheduler_default_filters=RetryFilter,AvailabilityZoneFilter,RamFilter,DiskFilter,ComputeFilter,ImagePropertiesFilter,ServerGroupAntiAffinityFilter,ServerGroupAffinityFilter,ComputeCapabilitiesFilter,AggregateInstanceExtraSpecsFilter
+scheduler_use_baremetal_filters=False
+scheduler_available_filters=nova.scheduler.filters.all_filters
+scheduler_weight_classes=nova.scheduler.weights.all_weighers
+scheduler_host_manager=nova.scheduler.ironic_host_manager.IronicHostManager
+scheduler_driver=nova.scheduler.filter_scheduler.FilterScheduler
+
+# rpc configs
+rpc_backend=rabbit
+notification_driver=messagingv2
+notification_topics=notifications
+report_interval=10
+service_down_time=60
+
+# nonncproxy configs
+novncproxy_host=0.0.0.0
+novncproxy_port=6080
+
+# compute configs
+compute_driver=libvirt.LibvirtDriver
+compute_manager=nova.compute.manager.ComputeManager
+vif_plugging_is_fatal=True
+vif_plugging_timeout=300
+firewall_driver=nova.virt.firewall.NoopFirewallDriver
+linuxnet_interface_driver=nova.network.linux_net.NeutronLinuxBridgeInterfaceDriver
+force_raw_images=True
+
+# network configs
+use_neutron=True
+security_group_api=neutron
+
+[api_database]
+connection=mysql://nova_api{{ nova_db_password }}:@{{ database_host }}/nova_api?charset=utf8
+
+[cache]
+enabled=True
+backend=dogpile.cache.memcached
+memcache_servers={{ memcached_host }}:11211
+
+[cinder]
+os_region_name=RegionOne
+catalog_info=volumev2:cinderv2:publicURL
+
+[conductor]
+use_local=False
+workers=2
+
+[database]
+connection=mysql://nova:{{ nova_db_password }}@{{ database_host }}/nova?charset=utf8
+
+[glance]
+api_servers={{ glance_host }}:9292
+
+[keystone_authtoken]
+auth_uri=http://{{ keystone_host }}:5000
+identity_uri=http://{{ keystone_host }}:35357
+admin_tenant_name=openstack
+admin_user={{ nova_os_username }}
+admin_password={{ nova_os_password }}
+
+[libvirt]
+virt_type=kvm
+inject_key=False
+vif_driver=nova.virt.libvirt.vif.LibvirtGenericVIFDriver
+
+[neutron]
+url=http://{{ neutron_host }}:9696
+auth_url=http://{{ keystone_host }}:35357
+auth_plugin=password
+project_domain_id=default
+project_domain_name=Default
+user_domain_id=default
+user_domain_name=Default
+project_name=openstack
+username={{ neutron_os_username }}
+password={{ neutron_os_password }}
+auth_uri=http://{{ keystone_host }}:5000
+
+region_name=RegionOne
+extension_sync_interval=600
+ovs_bridge=br-int
+service_metadata_proxy=True
+metadata_proxy_shared_secret = {{ metadata_shared_secret }}
+
+[oslo_concurrency]
+lock_path=/var/lib/nova/tmp
+
+[oslo_messaging_notifications]
+driver = messagingv2
+
+[oslo_messaging_rabbit]
+amqp_durable_queues=True
+rabbit_hosts={{ rabbitmq_host }}:5672
+rabbit_userid=openstack
+rabbit_password={{ rabbitmq_password }}
+rabbit_virtual_host=/
+rabbit_ha_queues=True
+heartbeat_timeout_threshold=30
+heartbeat_rate=2
+
+[vnc]
+enabled=True
+vncserver_listen=0.0.0.0
+vncserver_proxyclient_address={{ nova_host }}
+novncproxy_base_url=http://{{ nova_host }}:6080/vnc_auto.html

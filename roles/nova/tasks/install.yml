@@ -1,0 +1,11 @@
+---
+- name: install nova
+  yum: name={{ item }} state=latest
+  with_items:
+    - python-novaclient
+    - openstack-nova-api
+    - openstack-nova-novncproxy
+    - openstack-nova-conductor
+    - openstack-nova-scheduler
+    - openstack-nova-console
+    - openstack-nova-compute

@@ -1,0 +1,93 @@
+---
+# Handler for neutron notifications.
+
+- name: restart nova api
+  service:
+    name: openstack-nova-api
+    state: restarted
+
+- name: start nova api
+  service:
+    name: openstack-nova-api
+    state: started
+
+- name: stop nova api
+  service:
+    name: openstack-nova-api
+    state: stopped
+
+- name: restart nova conductor
+  service:
+    name: openstack-nova-conductor
+    state: restarted
+
+- name: start nova conductor
+  service:
+    name: openstack-nova-conductor
+    state: started
+
+- name: stop nova conductor
+  service:
+    name: openstack-nova-conductor
+    state: stopped
+
+- name: restart nova scheduler
+  service:
+    name: openstack-nova-scheduler
+    state: restarted
+
+- name: start nova scheduler
+  service:
+    name: openstack-nova-scheduler
+    state: started
+
+- name: stop nova scheduler
+  service:
+    name: openstack-nova-scheduler
+    state: stopped
+
+- name: restart nova consoleauth
+  service:
+    name: openstack-nova-consoleauth
+    state: restarted
+
+- name: start nova consoleauth
+  service:
+    name: openstack-nova-consoleauth
+    state: started
+
+- name: stop nova consoleauth
+  service:
+    name: openstack-nova-consoleauth
+    state: stopped
+
+- name: restart nova novncproxy
+  service:
+    name: openstack-nova-novncproxy
+    state: restarted
+
+- name: start nova novncproxy
+  service:
+    name: openstack-nova-novncproxy
+    state: started
+
+- name: stop nova novncproxy
+  service:
+    name: openstack-nova-novncproxy
+    state: stopped
+
+- name: restart nova compute
+  service:
+    name: openstack-nova-compute
+    state: restarted
+
+- name: start nova compute
+  service:
+    name: openstack-nova-compute
+    state: started
+
+- name: stop nova compute
+  service:
+    name: openstack-nova-compute
+    state: stopped
+

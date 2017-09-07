@@ -1,0 +1,7 @@
+---
+- name: config nova project
+  template:
+    src: nova.conf.j2
+    dest: /etc/nova/nova.conf
+    owner: nova
+    group: nova
