@@ -28,7 +28,7 @@ baremetal_scheduler_default_filters=RetryFilter,AvailabilityZoneFilter,RamFilter
 scheduler_use_baremetal_filters=False
 scheduler_available_filters=nova.scheduler.filters.all_filters
 scheduler_weight_classes=nova.scheduler.weights.all_weighers
-scheduler_host_manager=nova.scheduler.ironic_host_manager.IronicHostManager
+#scheduler_host_manager=nova.scheduler.ironic_host_manager.IronicHostManager
 scheduler_driver=nova.scheduler.filter_scheduler.FilterScheduler
 
 # rpc configs
@@ -37,6 +37,7 @@ notification_driver=messagingv2
 notification_topics=notifications
 report_interval=10
 service_down_time=60
+transport_url = rabbit://openstack:{{ rabbitmq_password }}@{{ rabbitmq_host }}:5672
 
 # nonncproxy configs
 novncproxy_host=0.0.0.0
@@ -56,7 +57,7 @@ use_neutron=True
 security_group_api=neutron
 
 [api_database]
-connection=mysql://nova_api{{ nova_db_password }}:@{{ database_host }}/nova_api?charset=utf8
+connection=mysql://nova:{{ nova_db_password }}@{{ database_host }}/nova_api?charset=utf8
 
 [cache]
 enabled=True

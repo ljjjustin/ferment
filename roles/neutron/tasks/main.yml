@@ -2,6 +2,7 @@
 # this playbook install and config openstack neutron.
 
 - include: install.yml
-- include: mysql.yml
 - include: config.yml
+- include: mysql.yml
+- include: keystone.yml
 - include: services.yml

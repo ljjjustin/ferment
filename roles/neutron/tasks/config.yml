@@ -28,8 +28,6 @@
     dest: /etc/neutron/plugins/ml2/ml2_conf.ini
     owner: neutron
     group: neutron
-  notify:
-    - restart neutron server
 
 - name: config neutron openvswitch agent
   template:
@@ -37,32 +35,24 @@
     dest: /etc/neutron/plugins/ml2/openvswitch_agent.ini
     owner: neutron
     group: neutron
-  notify:
-    - restart openvswitch agent
 
 - name: config neutron dhcp agent
-  file:
+  template:
     src: dhcp_agent.ini.j2
     dest: /etc/neutron/dhcp_agent.ini
     owner: neutron
     group: neutron
-  notify:
-    - restart dhcp agent
 
 - name: config neutron l3 agent
-  file:
+  template:
     src: l3_agent.ini.j2
     dest: /etc/neutron/l3_agent.ini
     owner: neutron
     group: neutron
-  notify:
-    - restart l3 agent
 
 - name: config neutron metadata agent
-  file:
+  template:
     src: metadata_agent.ini.j2
     dest: /etc/neutron/metadata_agent.ini
     owner: neutron
     group: neutron
-  notify:
-    - restart metadata agent

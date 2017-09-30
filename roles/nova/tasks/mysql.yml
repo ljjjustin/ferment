@@ -1,22 +1,29 @@
 ---
 - name: ensure nova database is present
   mysql_db:
-    name: nova
-  mysql_db:
-    name: nova_api
+    name: "{{ item }}"
+  with_items:
+    - "nova"
+    - "nova_api"
+    - "nova_cell0"
 
-- name: ensure nova database user is present
+- name: ensure database grants
   mysql_user:
     name: nova
-    host: "{{ item }}"
+    host: "{{ item[0] }}"
+    priv: "{{ item[1] }}.*:ALL"
+    append_privs: yes
     password: "{{ nova_db_password }}"
-    priv: nova.*:ALL/nova_api.*:ALL
-  with_items:
-    - "%"
-    - "localhost"
+  with_nested:
+    - [ "localhost", "%" ]
+    - [ "nova", "nova_api", "nova_cell0" ]
 
 - name: ensure database is synchronized
-  command: nova-manage --config-file /etc/nova/nova.conf db sync
+  command: "{{ item }}"
   become: yes
   become_user: nova
   changed_when: false
+  with_items:
+    - "nova-manage api_db sync"
+    - "nova-manage cell_v2 simple_cell_setup"
+    - "nova-manage db sync"

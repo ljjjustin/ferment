@@ -5,4 +5,3 @@
     dest: /etc/cinder/cinder.conf
     owner: cinder
     group: cinder
-  notify: restart cinder
