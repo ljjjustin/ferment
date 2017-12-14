@@ -32,8 +32,26 @@
     service_type: network
     description: "OpenStack Network Service"
 
-- name: ensure neutron endpoints
+- name: ensure neutron public endpoint
   os_keystone_endpoint:
+    cloud: default
+    service: neutron
+    interface: public
     region: "{{ region_name }}"
-    service_name: "neutron"
+    url: "{{ neutron_public_url }}"
+
+- name: ensure neutron admin endpoint
+  os_keystone_endpoint:
+    cloud: default
+    service: neutron
+    region: "{{ region_name }}"
+    interface: admin
+    url: "{{ neutron_public_url }}"
+
+- name: ensure neutron internal endpoint
+  os_keystone_endpoint:
+    cloud: default
+    service: neutron
+    interface: internal
+    region: "{{ region_name }}"
     url: "{{ neutron_public_url }}"

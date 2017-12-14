@@ -38,13 +38,29 @@
     service_type: image
     description: "OpenStack Image Service"
 
-- name: ensure glance endpoints
+- name: ensure glance public endpoint
   os_keystone_endpoint:
+    cloud: default
+    service: glance
+    interface: public
     region: "{{ region_name }}"
-    service_name: "glance"
-    public_url: "{{ glance_admin_url }}"
-    admin_url: "{{ glance_public_url }}"
-    internal_url: "{{ glance_internal_url }}"
+    url: "{{ glance_public_url }}"
+
+- name: ensure glance admin endpoint
+  os_keystone_endpoint:
+    cloud: default
+    service: glance
+    region: "{{ region_name }}"
+    interface: admin
+    url: "{{ glance_admin_url }}"
+
+- name: ensure glance internal endpoint
+  os_keystone_endpoint:
+    cloud: default
+    service: glance
+    interface: internal
+    region: "{{ region_name }}"
+    url: "{{ glance_internal_url }}"
 
 - name: ensure glance api start on boot
   service:

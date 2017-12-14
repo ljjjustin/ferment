@@ -24,7 +24,7 @@
     role: "admin"
     project: "openstack"
 
-- name: ensure cinder service
+- name: ensure cinder v1 service
   os_keystone_service:
     cloud: default
     state: present
@@ -32,10 +32,28 @@
     service_type: volume
     description: "OpenStack Volume Service"
 
-- name: ensure cinder endpoints
+- name: ensure cinder v1 public endpoint
   os_keystone_endpoint:
+    cloud: default
+    service: cinder
+    interface: public
     region: "{{ region_name }}"
-    service_name: "cinder"
+    url: "{{ cinder_v1_url }}"
+
+- name: ensure cinder v1 admin endpoint
+  os_keystone_endpoint:
+    cloud: default
+    service: cinder
+    region: "{{ region_name }}"
+    interface: admin
+    url: "{{ cinder_v1_url }}"
+
+- name: ensure cinder v1 internal endpoint
+  os_keystone_endpoint:
+    cloud: default
+    service: cinder
+    interface: internal
+    region: "{{ region_name }}"
     url: "{{ cinder_v1_url }}"
 
 - name: ensure cinder v2 service
@@ -46,10 +64,28 @@
     service_type: volumev2
     description: "OpenStack Volume Service V2"
 
-- name: ensure cinder endpoints
+- name: ensure cinder v2 internal endpoint
   os_keystone_endpoint:
+    cloud: default
+    service: cinder
+    interface: public
     region: "{{ region_name }}"
-    service_name: "cinderv2"
+    url: "{{ cinder_v2_url }}"
+
+- name: ensure cinder v2 internal endpoint
+  os_keystone_endpoint:
+    cloud: default
+    service: cinder
+    region: "{{ region_name }}"
+    interface: admin
+    url: "{{ cinder_v2_url }}"
+
+- name: ensure cinder v2 internal endpoint
+  os_keystone_endpoint:
+    cloud: default
+    service: cinder
+    interface: internal
+    region: "{{ region_name }}"
     url: "{{ cinder_v2_url }}"
 
 - name: ensure cinder v3 service
@@ -60,8 +96,26 @@
     service_type: volumev3
     description: "OpenStack Volume Service V3"
 
-- name: ensure cinder endpoints
+- name: ensure cinder v3 public endpoint
   os_keystone_endpoint:
+    cloud: default
+    service: cinder
+    interface: public
     region: "{{ region_name }}"
-    service_name: "cinderv3"
+    url: "{{ cinder_v3_url }}"
+
+- name: ensure cinder v3 admin endpoint
+  os_keystone_endpoint:
+    cloud: default
+    service: cinder
+    region: "{{ region_name }}"
+    interface: admin
+    url: "{{ cinder_v3_url }}"
+
+- name: ensure cinder v3 internal endpoint
+  os_keystone_endpoint:
+    cloud: default
+    service: cinder
+    interface: internal
+    region: "{{ region_name }}"
     url: "{{ cinder_v3_url }}"

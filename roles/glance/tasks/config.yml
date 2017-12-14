@@ -5,7 +5,6 @@
     dest: /etc/glance/glance-api.conf
     owner: glance
     group: glance
-  notify: restart glance api
 
 - name: config glance api paste
   file:
@@ -21,7 +20,6 @@
     dest: /etc/glance/glance-registry.conf
     owner: glance
     group: glance
-  notify: restart glance registry
 
 - name: config glance registry paste
   file:

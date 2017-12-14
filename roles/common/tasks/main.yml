@@ -19,6 +19,3 @@
   command: getenforce
   register: sestatus
   changed_when: false
-
-- name: Disable iptables
-  service: name=iptables state=stopped enabled=no

@@ -32,8 +32,26 @@
     service_type: compute
     description: "OpenStack Compute Service"
 
-- name: ensure nova endpoints
+- name: ensure nova public endpoint
   os_keystone_endpoint:
+    cloud: default
+    service: nova
+    interface: public
     region: "{{ region_name }}"
-    service_name: "nova"
+    url: "{{ nova_public_url }}"
+
+- name: ensure nova admin endpoint
+  os_keystone_endpoint:
+    cloud: default
+    service: nova
+    region: "{{ region_name }}"
+    interface: admin
+    url: "{{ nova_public_url }}"
+
+- name: ensure nova internal endpoint
+  os_keystone_endpoint:
+    cloud: default
+    service: nova
+    interface: internal
+    region: "{{ region_name }}"
     url: "{{ nova_public_url }}"
